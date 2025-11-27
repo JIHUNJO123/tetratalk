@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "english-japanese-chat",
+    "tetrachat": "korea-japan-chat"
+  },
+  "targets": {},
+  "etags": {}
+}

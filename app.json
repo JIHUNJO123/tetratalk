@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "TetraTalk",
+    "slug": "korea-japan-chat",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.tetratalk.app",
+      "config": {
+        "googleMobileAdsAppId": "ca-app-pub-5837885590326347~5503619440"
+      },
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.tetratalk.app",
+      "versionCode": 1,
+      "edgeToEdgeEnabled": true,
+      "config": {
+        "googleMobileAdsAppId": "ca-app-pub-5837885590326347~2090169804"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "89afd171-ce67-4895-a859-e6cdd018c1d5"
+      }
+    },
+    "owner": "jihunjo",
+    "plugins": [
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-5837885590326347~2090169804",
+          "iosAppId": "ca-app-pub-5837885590326347~5503619440",
+          "delayAppMeasurementInit": false
+        }
+      ]
+    ]
+  }
+}
