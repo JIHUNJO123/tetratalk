@@ -33,8 +33,25 @@
         "googleMobileAdsAppId": "ca-app-pub-5837885590326347~2090169804"
       }
     },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c029ee88-7475-4a19-95d6-0c161a935451"
+      }
+    },
     "owner": "jihunjo",
-    "plugins": [],
+    "plugins": [
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-5837885590326347~2090169804",
+          "iosAppId": "ca-app-pub-5837885590326347~5503619440",
+          "delayAppMeasurementInit": false
+        }
+      ]
+    ],
     "extra": {
       "eas": {
         "projectId": "c029ee88-7475-4a19-95d6-0c161a935451"
