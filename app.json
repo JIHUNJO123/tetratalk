@@ -37,6 +37,7 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
+      "admobTestMode": false,
       "eas": {
         "projectId": "c029ee88-7475-4a19-95d6-0c161a935451"
       }

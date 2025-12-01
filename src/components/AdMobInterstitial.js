@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
 // 웹에서는 AdMob을 import하지 않음
 let InterstitialAd, AdEventType, TestIds;
@@ -9,13 +10,14 @@ if (Platform.OS !== 'web') {
   TestIds = admob.TestIds;
 }
 
-// 개발 중에는 테스트 광고 ID 사용
-const __DEV__ = true; // TestFlight용 테스트 광고
+// Allow forcing AdMob test IDs from app.json extra.admobTestMode
+const resolvedTestFlag = Constants?.expoConfig?.extra?.admobTestMode;
+const useTestAds = typeof resolvedTestFlag === 'boolean' ? resolvedTestFlag : __DEV__;
 
 // 플랫폼별 광고 ID
 const getInterstitialAdUnitID = () => {
   // 개발 모드에서는 테스트 광고 사용
-  if (__DEV__) {
+  if (useTestAds) {
     return TestIds.INTERSTITIAL;
   }
   

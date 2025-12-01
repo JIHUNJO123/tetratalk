@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Platform } from 'react-native';
+import Constants from 'expo-constants';
 
 // 웹에서는 AdMob을 import하지 않음
 let BannerAd, BannerAdSize, TestIds;
@@ -10,6 +11,10 @@ if (Platform.OS !== 'web') {
   TestIds = admob.TestIds;
 }
 
+// Allow forcing AdMob test IDs from app.json extra.admobTestMode
+const resolvedTestFlag = Constants?.expoConfig?.extra?.admobTestMode;
+const useTestAds = typeof resolvedTestFlag === 'boolean' ? resolvedTestFlag : __DEV__;
+
 export default function AdMobBannerComponent({ screenType }) {
   // 웹에서는 광고 대신 빈 공간 표시
   if (Platform.OS === 'web') {
@@ -17,11 +22,9 @@ export default function AdMobBannerComponent({ screenType }) {
   }
 
   // 개발 중에는 테스트 광고 ID 사용, 프로덕션에서는 실제 ID 사용
-  const __DEV__ = true; // TestFlight용 테스트 광고
-  
   const getAdUnitID = () => {
     // 개발 모드에서는 테스트 광고 사용
-    if (__DEV__) {
+    if (useTestAds) {
       return TestIds.BANNER;
     }
     
