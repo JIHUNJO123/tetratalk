@@ -16,6 +16,9 @@
       "ios": {
         "buildConfiguration": "Release"
       },
+      "cache": {
+        "disabled": true
+      },
       "env": {
         "EXPO_NO_DOTENV": "1"
       }
