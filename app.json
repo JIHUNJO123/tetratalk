@@ -36,11 +36,6 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "extra": {
-      "eas": {
-        "projectId": "c029ee88-7475-4a19-95d6-0c161a935451"
-      }
-    },
     "owner": "jihunjo",
     "plugins": [
       [
