@@ -20,7 +20,8 @@
         "disabled": true
       },
       "env": {
-        "EXPO_NO_DOTENV": "1"
+        "EXPO_NO_DOTENV": "1",
+        "EXPO_IMAGE_CACHE_DIRECTORY": "/tmp/expo-image-cache"
       }
     }
   },
