@@ -10,12 +10,13 @@ if (Platform.OS !== 'web') {
 }
 
 // 개발 중에는 테스트 광고 ID 사용
-const __DEV__ = false; // 프로덕션 빌드 시 false로 변경
+// TestFlight 및 개발 빌드에서는 테스트 광고 사용
+const USE_TEST_ADS = true; // 앱 승인 후 false로 변경
 
 // 플랫폼별 광고 ID
 const getInterstitialAdUnitID = () => {
-  // 개발 모드에서는 테스트 광고 사용
-  if (__DEV__) {
+  // 테스트 광고 모드
+  if (USE_TEST_ADS) {
     return TestIds.INTERSTITIAL;
   }
   
