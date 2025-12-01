@@ -33,9 +33,6 @@
         "googleMobileAdsAppId": "ca-app-pub-5837885590326347~2090169804"
       }
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
     "owner": "jihunjo",
     "plugins": [
       [
