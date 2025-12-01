@@ -17,7 +17,7 @@ export default function AdMobBannerComponent({ screenType }) {
   }
 
   // 개발 중에는 테스트 광고 ID 사용, 프로덕션에서는 실제 ID 사용
-  const __DEV__ = false; // 프로덕션 빌드 시 false로 변경
+  const __DEV__ = true; // TestFlight용 테스트 광고
   
   const getAdUnitID = () => {
     // 개발 모드에서는 테스트 광고 사용

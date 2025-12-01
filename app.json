@@ -14,7 +14,6 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.tetratalk.app",
-      "buildNumber": "3",
       "config": {
         "googleMobileAdsAppId": "ca-app-pub-5837885590326347~5503619440"
       },
