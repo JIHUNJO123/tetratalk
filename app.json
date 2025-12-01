@@ -7,7 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -36,11 +36,6 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "extra": {
-      "eas": {
-        "projectId": "89afd171-ce67-4895-a859-e6cdd018c1d5"
-      }
-    },
     "owner": "jihunjo",
     "plugins": [
       [
@@ -51,6 +46,11 @@
           "delayAppMeasurementInit": false
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "c029ee88-7475-4a19-95d6-0c161a935451"
+      }
+    }
   }
 }
