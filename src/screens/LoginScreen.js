@@ -738,12 +738,7 @@ Contacto: jihun.jo@yahoo.com`,
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
-            autoComplete="email"
-            autoCorrect={false}
-            textContentType="emailAddress"
             keyboardType="email-address"
-            importantForAutofill="yes"
-            spellCheck={false}
           />
           
           <TextInput
