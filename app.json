@@ -2,18 +2,19 @@
   "expo": {
     "name": "TetraTalk",
     "slug": "tetratalk",
-    "version": "1.0.0",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.tetratalk.app",
+      "buildNumber": "3",
       "config": {
         "googleMobileAdsAppId": "ca-app-pub-5837885590326347~5503619440"
       },
@@ -27,7 +28,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.tetratalk.app",
-      "versionCode": 1,
+      "versionCode": 3,
       "edgeToEdgeEnabled": true,
       "config": {
         "googleMobileAdsAppId": "ca-app-pub-5837885590326347~2090169804"

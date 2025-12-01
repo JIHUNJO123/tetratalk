@@ -19,7 +19,7 @@ import { useAuth } from '../context/AuthContext';
 import { showInterstitial } from '../components/AdMobInterstitial';
 
 export default function LoginScreen({ navigation }) {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [isLogin, setIsLogin] = useState(true);
@@ -56,16 +56,16 @@ export default function LoginScreen({ navigation }) {
         ja: 'ニックネームは文字と数字のみ使用可能です。'
       },
       usernameRequired: {
-        en: 'Please enter your ID.',
-        es: 'Por favor ingrese su ID.',
-        zh: '请输入您的ID。',
-        ja: 'IDを入力してください。'
+        en: 'Please enter your email address.',
+        es: 'Por favor ingrese su correo electrónico.',
+        zh: '请输入您的电子邮件地址。',
+        ja: 'メールアドレスを入力してください。'
       },
       usernameInvalid: {
-        en: 'ID must be 4-16 characters (letters and numbers only).',
-        es: 'El ID debe tener 4-16 caracteres (solo letras y números).',
-        zh: 'ID必须是4-16个字符（仅字母和数字）。',
-        ja: 'IDは4～16文字（英数字のみ）です。'
+        en: 'Please enter a valid email address.',
+        es: 'Por favor ingrese un correo electrónico válido.',
+        zh: '请输入有效的电子邮件地址。',
+        ja: '有効なメールアドレスを入力してください。'
       },
       passwordRequired: {
         en: 'Please enter your password.',
@@ -108,12 +108,12 @@ export default function LoginScreen({ navigation }) {
       }
     }
 
-    // 아이디 규칙: 4-16자, 영문/숫자만 허용
-    if (!username) {
+    // 이메일 규칙: 유효한 이메일 형식
+    if (!email) {
       return messages.usernameRequired[lang] || messages.usernameRequired.en;
     }
-    const usernameRegex = /^[a-zA-Z0-9]{4,16}$/;
-    if (!usernameRegex.test(username)) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
       return messages.usernameInvalid[lang] || messages.usernameInvalid.en;
     }
 
@@ -162,37 +162,8 @@ export default function LoginScreen({ navigation }) {
     
     try {
       if (isLogin) {
-        // 로그인 시도 전에 해당 아이디가 존재하는지 확인
-        const userQuery = query(
-          collection(db, 'users'),
-          where('username', '==', username)
-        );
-        const userSnapshot = await getDocs(userQuery);
-        
-        if (userSnapshot.empty) {
-          const errorMessages = {
-            en: 'ID not found. Please check your ID.',
-            es: 'ID no encontrado. Por favor verifique su ID.',
-            zh: '未找到ID。请检查您的ID。',
-            ja: 'IDが見つかりません。IDを確認してください。'
-          };
-          const errorTitles = {
-            en: 'Login Error',
-            es: 'Error de Inicio de Sesión',
-            zh: '登录错误',
-            ja: 'ログインエラー'
-          };
-          const errorMsg = errorMessages[language] || errorMessages.en;
-          const errorTitle = errorTitles[language] || errorTitles.en;
-          if (typeof window !== 'undefined' && window.alert) {
-            window.alert(`⚠️ ${errorTitle}\n\n${errorMsg}`);
-          } else {
-            Alert.alert(`⚠️ ${errorTitle}`, errorMsg);
-          }
-          return;
-        }
-        // 아이디와 비밀번호로 로그인 (선택한 언어 전달)
-        await login(username, password, language);
+        // 이메일과 비밀번호로 로그인 (선택한 언어 전달)
+        await login(email, password, language);
         await showInterstitial(); // 로그인 성공 시 전면 광고 노출
       } else {
         // Google 회원가입 로직 제거
@@ -238,8 +209,8 @@ export default function LoginScreen({ navigation }) {
             return;
           }
           
-          console.log('Calling signup with:', { username, displayName, language });
-          const result = await signup(username, password, displayName, language);
+          console.log('Calling signup with:', { email, displayName, language });
+          const result = await signup(email, password, displayName, language);
           console.log('Signup result:', result);
           
           await showInterstitial(); // 회원가입 성공 시 전면 광고 노출
@@ -282,16 +253,16 @@ export default function LoginScreen({ navigation }) {
           ja: 'データベース権限エラーです。サポートにお問い合わせください。'
         },
         emailInUse: {
-          en: 'This ID is already in use.',
-          es: 'Este ID ya está en uso.',
-          zh: '此ID已被使用。',
-          ja: 'このIDはすでに使用されています。'
+          en: 'This email address is already in use.',
+          es: 'Este correo electrónico ya está en uso.',
+          zh: '此电子邮件地址已被使用。',
+          ja: 'このメールアドレスはすでに使用されています。'
         },
         invalidEmail: {
-          en: 'Invalid ID format.',
-          es: 'Formato de ID inválido.',
-          zh: '无效的ID格式。',
-          ja: '無効なID形式です。'
+          en: 'Invalid email address format.',
+          es: 'Formato de correo electrónico inválido.',
+          zh: '无效的电子邮件地址格式。',
+          ja: '無効なメールアドレス形式です。'
         },
         weakPassword: {
           en: 'Password must be at least 6 characters.',
@@ -300,16 +271,16 @@ export default function LoginScreen({ navigation }) {
           ja: 'パスワードは6文字以上である必要があります。'
         },
         userNotFound: {
-          en: 'ID not found. Please check your ID.',
-          es: 'ID no encontrado. Por favor verifique su ID.',
-          zh: '未找到ID。请检查您的ID。',
-          ja: 'IDが見つかりません。IDを確認してください。'
+          en: 'Email not found. Please check your email address.',
+          es: 'Correo electrónico no encontrado. Por favor verifique su correo.',
+          zh: '未找到电子邮件。请检查您的电子邮件地址。',
+          ja: 'メールアドレスが見つかりません。メールアドレスを確認してください。'
         },
         wrongPassword: {
-          en: 'Incorrect ID or password.',
-          es: 'ID o contraseña incorrectos.',
-          zh: 'ID或密码不正确。',
-          ja: 'IDまたはパスワードが間違っています。'
+          en: 'Incorrect email or password.',
+          es: 'Correo electrónico o contraseña incorrectos.',
+          zh: '电子邮件或密码不正确。',
+          ja: 'メールアドレスまたはパスワードが間違っています。'
         },
         tooManyRequests: {
           en: 'Too many failed attempts. Please try again later.',
@@ -444,10 +415,10 @@ export default function LoginScreen({ navigation }) {
         ja: 'ニックネーム (2～10文字)'
       },
       idPlaceholder: {
-        en: 'ID (4-16 letters/numbers)',
-        es: 'ID (4-16 letras/números)',
-        zh: 'ID (4-16个字母/数字)',
-        ja: 'ID (4～16文字 英数字)'
+        en: 'Email Address',
+        es: 'Correo Electrónico',
+        zh: '电子邮件地址',
+        ja: 'メールアドレス'
       },
       passwordPlaceholder: {
         en: 'Password (6-20 chars, letters+numbers)',
@@ -504,10 +475,10 @@ export default function LoginScreen({ navigation }) {
         ja: '• ニックネーム: 2～10文字'
       },
       idRule: {
-        en: '• ID: 4-16 characters (letters and numbers only)',
-        es: '• ID: 4-16 caracteres (solo letras y números)',
-        zh: '• ID：4-16个字符（仅字母和数字）',
-        ja: '• ID: 4～16文字（英数字のみ）'
+        en: '• Email: Valid email address required',
+        es: '• Correo: Se requiere correo electrónico válido',
+        zh: '• 电子邮件：需要有效的电子邮件地址',
+        ja: '• メール: 有効なメールアドレスが必要'
       },
       passwordRule: {
         en: '• Password: 6-20 characters (letters+numbers required)',
@@ -764,20 +735,15 @@ Contacto: jihun.jo@yahoo.com`,
           <TextInput
             style={styles.input}
             placeholder={idPlaceholder}
-            value={username}
-            onChangeText={(text) => {
-              // @ 기호가 포함되어 있으면 제거
-              const cleanText = text.replace(/@.*/g, '');
-              setUsername(cleanText);
-            }}
+            value={email}
+            onChangeText={setEmail}
             autoCapitalize="none"
-            autoComplete="off"
+            autoComplete="email"
             autoCorrect={false}
-            textContentType="none"
-            keyboardType="default"
-            importantForAutofill="no"
+            textContentType="emailAddress"
+            keyboardType="email-address"
+            importantForAutofill="yes"
             spellCheck={false}
-            maxLength={16}
           />
           
           <TextInput

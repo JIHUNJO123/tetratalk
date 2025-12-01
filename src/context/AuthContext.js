@@ -90,10 +90,10 @@ export const AuthProvider = ({ children }) => {
           // Firestore에 프로필이 없으면 기본 프로필 설정
           const defaultProfile = {
             uid: firebaseUser.uid,
-            username: firebaseUser.username || 'Unknown',
+            email: firebaseUser.email || 'Unknown',
             displayName: firebaseUser.displayName || 'Unknown',
             language: 'en',
-            provider: 'custom'
+            provider: 'email'
           };
           setUserProfile(defaultProfile);
           setLoading(false);
@@ -109,19 +109,12 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Firebase Auth를 사용하는 회원가입 함수
-  const signup = async (username, password, displayName, language) => {
+  const signup = async (email, password, displayName, language) => {
     try {
       setLoading(true);
-      console.log('Starting signup process for username:', username);
+      console.log('Starting signup process for email:', email);
 
-      // 닉네임/아이디 중복 체크
-      const usernameQuery = query(collection(db, 'users'), where('username', '==', username));
-      const usernameSnapshot = await getDocs(usernameQuery);
-      if (!usernameSnapshot.empty) {
-        console.log('Username already exists:', username);
-        throw new Error(language === 'en' ? 'This ID is already in use.' : 'このIDはすでに使用されています。');
-      }
-
+      // 닉네임 중복 체크
       const displayNameQuery = query(collection(db, 'users'), where('displayName', '==', displayName));
       const displayNameSnapshot = await getDocs(displayNameQuery);
       if (!displayNameSnapshot.empty) {
@@ -129,8 +122,7 @@ export const AuthProvider = ({ children }) => {
         throw new Error(language === 'en' ? 'This nickname is already in use.' : 'このニックネームはすでに使用されています。');
       }
 
-      // Firebase Auth로 사용자 생성 (username을 email 형식으로 변환)
-      const email = `${username}@user.app`;
+      // Firebase Auth로 사용자 생성 (이메일 직접 사용)
       console.log('Creating Firebase Auth user with email:', email);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
@@ -151,23 +143,23 @@ export const AuthProvider = ({ children }) => {
       // Firestore에 사용자 프로필 저장
       await setDoc(doc(db, 'users', firebaseUser.uid), {
         uid: firebaseUser.uid,
-        username,
+        email,
         displayName,
         language,
         deviceId,
         createdAt: new Date().toISOString(),
-        provider: 'custom',
+        provider: 'email',
         deleted: false
       });
 
       // 프로필 설정
       const profileData = {
         uid: firebaseUser.uid,
-        username,
+        email,
         displayName,
         language,
         deviceId,
-        provider: 'custom'
+        provider: 'email'
       };
 
       setUserProfile(profileData);
@@ -185,34 +177,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Firebase Auth를 사용하는 로그인 함수
-  const login = async (username, password, selectedLanguage = 'en') => {
+  const login = async (email, password, selectedLanguage = 'en') => {
     try {
       setLoading(true);
-      console.log('Starting login process for username:', username);
+      console.log('Starting login process for email:', email);
 
-      // Firestore에서 username으로 사용자 찾기
-      const userQuery = query(collection(db, 'users'), where('username', '==', username));
-      const userSnapshot = await getDocs(userQuery);
-
-      if (userSnapshot.empty) {
-        console.log('Username not found:', username);
-        throw new Error('ID not found.');
-      }
-
-      const userData = userSnapshot.docs[0].data();
-      console.log('User data found:', userData.uid);
-
-      // 탈퇴한 사용자 체크
-      if (userData.deleted) {
-        console.log('User is deleted:', username);
-        throw new Error('This account has been deleted.');
-      }
-
-      // 언어 체크: 현재 선택한 언어와 계정 언어가 일치하는지 확인
-      // 로그인 화면에서 선택한 언어를 가져와야 함 (기본값 'en')
-
-      // Firebase Auth로 로그인 시도 (username을 email 형식으로 변환)
-      const email = `${username}@user.app`;
+      // Firebase Auth로 로그인 시도 (이메일 직접 사용)
       console.log('Attempting Firebase Auth login with email:', email);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
@@ -222,6 +192,14 @@ export const AuthProvider = ({ children }) => {
       const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
       if (userDoc.exists()) {
         const profileData = userDoc.data();
+        
+        // 탈퇴한 사용자 체크
+        if (profileData.deleted) {
+          console.log('User is deleted:', email);
+          await signOut(auth);
+          throw new Error('This account has been deleted.');
+        }
+        
         setUserProfile(profileData);
         setUser(firebaseUser);
         setLoading(false);
