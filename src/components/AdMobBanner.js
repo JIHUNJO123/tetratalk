@@ -42,7 +42,7 @@ export default function AdMobBannerComponent({ screenType }) {
       if (screenType === 'chatList') {
         return 'ca-app-pub-5837885590326347/8321246671'; // ChatListScreen iOS
       } else if (screenType === 'chat') {
-        return 'ca-app-pub-5837885590326347/7199736691'; // ChatScreen iOS
+        return 'ca-app-pub-5837885590326347/1755838329'; // ChatScreen iOS
       } else {
         return 'ca-app-pub-5837885590326347/8321246671'; // Default iOS
       }

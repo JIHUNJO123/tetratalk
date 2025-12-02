@@ -10,6 +10,15 @@ if (Platform.OS !== 'web') {
   TestIds = admob.TestIds;
 }
 
+// AuthContext에서 광고 제거 상태를 가져오기 위한 변수
+let globalAdsRemoved = false;
+
+// 광고 제거 상태 설정 함수 (AuthContext에서 호출)
+export function setGlobalAdsRemoved(value) {
+  globalAdsRemoved = value;
+  console.log('Global adsRemoved set to:', value);
+}
+
 // Allow forcing AdMob test IDs from app.json extra.admobTestMode
 const resolvedTestFlag = Constants?.expoConfig?.extra?.admobTestMode;
 const useTestAds = typeof resolvedTestFlag === 'boolean' ? resolvedTestFlag : __DEV__;
@@ -59,6 +68,12 @@ if (Platform.OS !== 'web') {
 }
 
 export async function showInterstitial() {
+  // 광고 제거한 사용자는 광고 표시 안함
+  if (globalAdsRemoved) {
+    console.log('Ads removed - skipping interstitial');
+    return;
+  }
+
   if (Platform.OS === 'web') {
     return;
   }

@@ -28,7 +28,7 @@ export default function ChatListScreen({ navigation }) {
       },
       logout: {
         en: 'Logout',
-        es: 'Cerrar Sesión',
+        es: 'Salir',
         zh: '登出',
         ja: 'ログアウト'
       },
@@ -207,10 +207,10 @@ export default function ChatListScreen({ navigation }) {
         ja: 'チャットルームがありません'
       },
       settings: {
-        en: '⚙️',
-        es: '⚙️',
-        zh: '⚙️',
-        ja: '⚙️'
+        en: 'Settings',
+        es: 'Ajustes',
+        zh: '设置',
+        ja: '設定'
       }
     };
     return translations[key]?.[language] || translations[key]?.en || '';
@@ -691,11 +691,12 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.9)',
   },
   settingsButton: {
-    padding: 8,
+    padding: 5,
   },
   settingsText: {
     color: '#ffffff',
-    fontSize: 22,
+    fontSize: 14,
+    fontWeight: '600',
   },
   profileButton: {
     padding: 5,

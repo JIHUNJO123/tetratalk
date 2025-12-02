@@ -189,6 +189,7 @@ export default function LoginScreen({ navigation }) {
             } else {
               Alert.alert(`⚠️ ${errorTitle}`, errorMsg);
             }
+            setIsProcessing(false); // 중요: return 전에 처리 상태 리셋
             return;
           }
           
@@ -206,6 +207,7 @@ export default function LoginScreen({ navigation }) {
             } else {
               Alert.alert(`⚠️ ${errorTitle[language] || errorTitle.en}`, signupValidationError);
             }
+            setIsProcessing(false); // 중요: return 전에 처리 상태 리셋
             return;
           }
           
@@ -505,7 +507,7 @@ export default function LoginScreen({ navigation }) {
         ja: '利用規約'
       },
       termsContent: {
-        en: `By using TetraTalk, you agree to:
+        en: `By using TetraChat, you agree to:
 
 1. Prohibited Content
 • No harassment, hate speech, discrimination
@@ -536,7 +538,7 @@ export default function LoginScreen({ navigation }) {
 • Serious violations: Immediate ban
 
 Contact: jihun.jo@yahoo.com`,
-        es: `Al usar TetraTalk, usted acepta:
+        es: `Al usar TetraChat, usted acepta:
 
 1. Contenido Prohibido
 • No acoso, discurso de odio, discriminación
@@ -567,7 +569,7 @@ Contact: jihun.jo@yahoo.com`,
 • Violaciones graves: Prohibición inmediata
 
 Contacto: jihun.jo@yahoo.com`,
-        zh: `使用TetraTalk即表示您同意：
+        zh: `使用TetraChat即表示您同意：
 
 1. 禁止内容
 • 禁止骚扰、仇恨言论、歧视
@@ -598,7 +600,7 @@ Contacto: jihun.jo@yahoo.com`,
 • 严重违规：立即封禁
 
 联系方式：jihun.jo@yahoo.com`,
-        ja: `TetraTalkを使用することで、以下に同意します：
+        ja: `TetraChatを使用することで、以下に同意します：
 
 1. 禁止コンテンツ
 • ハラスメント、ヘイトスピーチ、差別の禁止
@@ -707,7 +709,7 @@ Contacto: jihun.jo@yahoo.com`,
         </View>
 
         <View style={styles.header}>
-          <Text style={styles.appName}>TetraTalk</Text>
+          <Text style={styles.appName}>TetraChat</Text>
           <Text style={styles.title}>🌏🌐</Text>
           <Text style={styles.appTitle}>
             {appTitle}

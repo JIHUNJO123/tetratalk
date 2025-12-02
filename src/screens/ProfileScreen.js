@@ -176,7 +176,7 @@ export default function ProfileScreen({ navigation }) {
       },
       logout: {
         en: 'Logout',
-        es: 'Cerrar Sesión',
+        es: 'Salir',
         zh: '登出',
         ja: 'ログアウト'
       }

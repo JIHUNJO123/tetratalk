@@ -33,10 +33,10 @@ const TermsScreen = ({ navigation, route }) => {
         ja: '1. 規約の承認'
       },
       section1Text: {
-        en: 'By creating an account and using TetraTalk, you agree to comply with these Terms of Service.',
-        es: 'Al crear una cuenta y usar TetraTalk, usted acepta cumplir con estos Términos de Servicio.',
-        zh: '通过创建账户和使用TetraTalk，您同意遵守这些服务条款。',
-        ja: 'アカウントを作成しTetraTalkを使用することで、本利用規約に同意したものとみなされます。'
+        en: 'By creating an account and using TetraChat, you agree to comply with these Terms of Service.',
+        es: 'Al crear una cuenta y usar TetraChat, usted acepta cumplir con estos Términos de Servicio.',
+        zh: '通过创建账户和使用TetraChat，您同意遵守这些服务条款。',
+        ja: 'アカウントを作成しTetraChatを使用することで、本利用規約に同意したものとみなされます。'
       },
       section2Title: {
         en: '2. Prohibited Content',

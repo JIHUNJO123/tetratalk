@@ -10,6 +10,7 @@ import { doc, setDoc, getDoc, collection, query, where, getDocs, updateDoc, dele
 import { auth, db } from '../services/firebase';
 import { registerForPushNotifications } from '../services/notifications';
 import { initializeIAP, disconnectIAP, setPurchaseListener, restorePurchases as restoreIAPPurchases, isIAPAvailable } from '../services/iap';
+import { setGlobalAdsRemoved } from '../components/AdMobInterstitial';
 import * as Application from 'expo-application';
 // GoogleSignin import 제거
 
@@ -30,6 +31,11 @@ export const AuthProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [adsRemoved, setAdsRemoved] = useState(false);
+
+  // adsRemoved 상태 변경 시 전면광고 모듈에 알림
+  useEffect(() => {
+    setGlobalAdsRemoved(adsRemoved);
+  }, [adsRemoved]);
 
   // IAP 초기화 및 Purchase Listener 설정
   useEffect(() => {
@@ -139,6 +145,21 @@ export const AuthProvider = ({ children }) => {
           // 광고 제거 상태 체크
           if (profileData.adsRemoved) {
             setAdsRemoved(true);
+          } else if (isIAPAvailable()) {
+            // Firebase에 없지만 기기에 구매 기록이 있는지 확인
+            try {
+              const restored = await restoreIAPPurchases();
+              if (restored) {
+                console.log('Purchase restored from device');
+                setAdsRemoved(true);
+                await updateDoc(doc(db, 'users', firebaseUser.uid), {
+                  adsRemoved: true,
+                  adsRemovedAt: new Date().toISOString(),
+                }).catch(console.error);
+              }
+            } catch (error) {
+              console.error('Error checking purchase restoration:', error);
+            }
           }
           console.log('User profile loaded:', profileData);
           

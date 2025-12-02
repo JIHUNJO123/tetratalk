@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "TetraTalk",
+    "name": "TetraChat",
     "slug": "tetratalk",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -14,7 +14,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.tetratalk.app",
-      "buildNumber": "32",
+      "buildNumber": "36",
       "config": {
         "googleMobileAdsAppId": "ca-app-pub-5837885590326347~5503619440"
       },
