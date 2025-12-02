@@ -9,6 +9,7 @@ import {
 import { doc, setDoc, getDoc, collection, query, where, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
 import { registerForPushNotifications } from '../services/notifications';
+import { initializeIAP, disconnectIAP, setPurchaseListener, restorePurchases as restoreIAPPurchases, isIAPAvailable } from '../services/iap';
 import * as Application from 'expo-application';
 // GoogleSignin import 제거
 
@@ -28,6 +29,69 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [adsRemoved, setAdsRemoved] = useState(false);
+
+  // IAP 초기화 및 Purchase Listener 설정
+  useEffect(() => {
+    let cleanupListener = null;
+
+    const setupIAP = async () => {
+      if (isIAPAvailable()) {
+        await initializeIAP();
+        
+        // 구매 리스너 설정
+        cleanupListener = setPurchaseListener(
+          // 구매 성공 시
+          () => {
+            console.log('Purchase successful - ads removed');
+            setAdsRemoved(true);
+            // Firebase에 저장
+            if (user?.uid) {
+              updateDoc(doc(db, 'users', user.uid), {
+                adsRemoved: true,
+                adsRemovedAt: new Date().toISOString(),
+              }).catch(console.error);
+            }
+          },
+          // 구매 에러 시
+          (errorCode) => {
+            console.error('Purchase error:', errorCode);
+          }
+        );
+      }
+    };
+
+    setupIAP();
+
+    return () => {
+      if (cleanupListener) cleanupListener();
+      if (isIAPAvailable()) disconnectIAP();
+    };
+  }, [user]);
+
+  // 구매 복원 핸들러
+  const handleRestorePurchases = async () => {
+    if (!isIAPAvailable()) return false;
+    
+    try {
+      const restored = await restoreIAPPurchases();
+      if (restored) {
+        setAdsRemoved(true);
+        // Firebase에 저장
+        if (user?.uid) {
+          await updateDoc(doc(db, 'users', user.uid), {
+            adsRemoved: true,
+            adsRemovedAt: new Date().toISOString(),
+          });
+        }
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Restore purchases error:', error);
+      return false;
+    }
+  };
 
   useEffect(() => {
     // Google Signin 초기화 제거
@@ -72,6 +136,10 @@ export const AuthProvider = ({ children }) => {
           }
           
           setUserProfile(profileData);
+          // 광고 제거 상태 체크
+          if (profileData.adsRemoved) {
+            setAdsRemoved(true);
+          }
           console.log('User profile loaded:', profileData);
           
           // 푸시 알림 토큰 등록 (웹에서는 제외)
@@ -285,6 +353,8 @@ export const AuthProvider = ({ children }) => {
     deleteAccount,
     loading,
     setUserProfile,
+    adsRemoved,
+    handleRestorePurchases,
   };
 
   return (

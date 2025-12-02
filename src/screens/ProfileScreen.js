@@ -2,57 +2,57 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ActivityIndicator,
+  SafeAreaView,
 } from 'react-native';
-import { doc, updateDoc, query, collection, where, getDocs } from 'firebase/firestore';
-import { db } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
-import { purchaseRemoveAds, restorePurchases, checkPremiumStatus, getRemoveAdsPrice } from '../services/iap';
+import { purchaseRemoveAds, getProducts, isIAPAvailable } from '../services/iap';
 
 export default function ProfileScreen({ navigation }) {
-  const { user, userProfile, logout, deleteAccount } = useAuth();
-  const language = userProfile?.language || 'en';
-  const [isPremium, setIsPremium] = useState(false);
-  const [price, setPrice] = useState('$2.99');
-  const [isLoading, setIsLoading] = useState(false);
+  const { user, userProfile, logout, deleteAccount, adsRemoved, handleRestorePurchases } = useAuth();
+  const [isLoadingPurchase, setIsLoadingPurchase] = useState(false);
+  const [productPrice, setProductPrice] = useState('$2.99');
   
+  const language = userProfile?.language || 'en';
+
+  // 상품 가격 가져오기
   useEffect(() => {
-    const loadPremiumStatus = async () => {
-      if (user?.uid) {
-        const premium = await checkPremiumStatus(user.uid);
-        setIsPremium(premium);
-        const priceStr = await getRemoveAdsPrice();
-        setPrice(priceStr);
+    const fetchProducts = async () => {
+      if (isIAPAvailable() && !adsRemoved) {
+        const products = await getProducts();
+        if (products.length > 0) {
+          setProductPrice(products[0].localizedPrice || products[0].price || '$2.99');
+        }
       }
     };
-    loadPremiumStatus();
-  }, [user]);
+    fetchProducts();
+  }, [adsRemoved]);
 
   const getTranslation = (key) => {
     const translations = {
       removeAds: {
-        en: 'Remove Ads',
-        es: 'Eliminar Anuncios',
-        zh: '移除广告',
-        ja: '広告を削除'
+        en: '🚫 Remove Ads',
+        es: '🚫 Eliminar Anuncios',
+        zh: '🚫 移除广告',
+        ja: '🚫 広告を削除'
       },
       removeAdsDesc: {
-        en: 'Enjoy ad-free experience',
-        es: 'Disfrute de una experiencia sin anuncios',
-        zh: '享受无广告体验',
-        ja: '広告なしの体験をお楽しみください'
+        en: 'Enjoy an ad-free experience with a one-time purchase.',
+        es: 'Disfruta de una experiencia sin anuncios con una compra única.',
+        zh: '一次性购买，享受无广告体验。',
+        ja: '1回限りの購入で広告なしの体験をお楽しみください。'
       },
-      purchase: {
-        en: 'Purchase',
-        es: 'Comprar',
-        zh: '购买',
-        ja: '購入'
+      adsRemoved: {
+        en: '✓ Ads Removed',
+        es: '✓ Anuncios Eliminados',
+        zh: '✓ 广告已移除',
+        ja: '✓ 広告削除済み'
       },
       restore: {
         en: 'Restore Purchases',
@@ -60,65 +60,53 @@ export default function ProfileScreen({ navigation }) {
         zh: '恢复购买',
         ja: '購入を復元'
       },
-      premiumActive: {
-        en: '✓ Premium Active',
-        es: '✓ Premium Activo',
-        zh: '✓ 高级版已激活',
-        ja: '✓ プレミアム有効'
-      },
-      purchaseSuccess: {
-        en: 'Purchase Successful',
-        es: 'Compra Exitosa',
-        zh: '购买成功',
-        ja: '購入完了'
-      },
-      purchaseSuccessMsg: {
-        en: 'Ads have been removed. Thank you for your purchase!',
-        es: '¡Los anuncios han sido eliminados. Gracias por su compra!',
-        zh: '广告已删除。感谢您的购买！',
-        ja: '広告が削除されました。ご購入ありがとうございます！'
-      },
-      purchaseFailed: {
-        en: 'Purchase Failed',
-        es: 'Compra Fallida',
-        zh: '购买失败',
-        ja: '購入失敗'
-      },
-      restoreSuccess: {
-        en: 'Restore Successful',
-        es: 'Restauración Exitosa',
-        zh: '恢复成功',
+      restored: {
+        en: 'Restored',
+        es: 'Restaurado',
+        zh: '已恢复',
         ja: '復元完了'
       },
-      restoreSuccessMsg: {
+      restoredMsg: {
         en: 'Your purchase has been restored.',
         es: 'Su compra ha sido restaurada.',
         zh: '您的购买已恢复。',
         ja: '購入が復元されました。'
       },
       noPurchases: {
-        en: 'No Purchases Found',
-        es: 'No se Encontraron Compras',
-        zh: '未找到购买记录',
-        ja: '購入履歴がありません'
+        en: 'No Purchases',
+        es: 'Sin Compras',
+        zh: '无购买记录',
+        ja: '購入なし'
       },
       noPurchasesMsg: {
-        en: 'No previous purchases found to restore.',
-        es: 'No se encontraron compras anteriores para restaurar.',
-        zh: '没有找到可恢复的购买记录。',
-        ja: '復元可能な購入履歴がありません。'
+        en: 'No previous purchases found.',
+        es: 'No se encontraron compras anteriores.',
+        zh: '未找到以前的购买记录。',
+        ja: '以前の購入履歴がありません。'
+      },
+      notAvailable: {
+        en: 'Not Available',
+        es: 'No Disponible',
+        zh: '不可用',
+        ja: '利用不可'
+      },
+      notAvailableMsg: {
+        en: 'In-app purchases are not available on this device.',
+        es: 'Las compras integradas no están disponibles en este dispositivo.',
+        zh: '此设备不支持应用内购买。',
+        ja: 'このデバイスではアプリ内購入は利用できません。'
       },
       deleteAccount: {
         en: 'Delete Account',
         es: 'Eliminar Cuenta',
         zh: '删除账户',
-        ja: 'アカウント削除'
+        ja: '会員退会'
       },
       deleteConfirm: {
         en: 'Are you sure you want to delete your account? This action cannot be undone.',
         es: '¿Está seguro de que desea eliminar su cuenta? Esta acción no se puede deshacer.',
         zh: '您确定要删除您的账户吗？此操作无法撤消。',
-        ja: 'アカウントを削除しますか？この操作は元に戻せません。'
+        ja: '会員退会しますか？この操作は元に戻せません。'
       },
       cancel: {
         en: 'Cancel',
@@ -130,7 +118,7 @@ export default function ProfileScreen({ navigation }) {
         en: 'Delete',
         es: 'Eliminar',
         zh: '删除',
-        ja: '削除'
+        ja: '退会'
       },
       success: {
         en: 'Success',
@@ -142,7 +130,7 @@ export default function ProfileScreen({ navigation }) {
         en: 'Account deleted successfully.',
         es: 'Cuenta eliminada exitosamente.',
         zh: '账户删除成功。',
-        ja: 'アカウントが削除されました。'
+        ja: '会員退会が完了しました。'
       },
       error: {
         en: 'Error',
@@ -154,7 +142,19 @@ export default function ProfileScreen({ navigation }) {
         en: 'Failed to delete account.',
         es: 'Error al eliminar cuenta.',
         zh: '删除账户失败。',
-        ja: 'アカウント削除に失敗しました。'
+        ja: '会員退会に失敗しました。'
+      },
+      purchaseFailed: {
+        en: 'Purchase failed.',
+        es: 'La compra falló.',
+        zh: '购买失败。',
+        ja: '購入に失敗しました。'
+      },
+      restoreFailed: {
+        en: 'Failed to restore purchases.',
+        es: 'Error al restaurar compras.',
+        zh: '恢复购买失败。',
+        ja: '購入の復元に失敗しました。'
       },
       back: {
         en: '← Back',
@@ -167,12 +167,6 @@ export default function ProfileScreen({ navigation }) {
         es: 'Configuración',
         zh: '设置',
         ja: '設定'
-      },
-      email: {
-        en: 'Email',
-        es: 'Correo',
-        zh: '电子邮件',
-        ja: 'メールアドレス'
       },
       nickname: {
         en: 'Nickname',
@@ -191,49 +185,70 @@ export default function ProfileScreen({ navigation }) {
   };
 
   const handlePurchaseRemoveAds = async () => {
-    setIsLoading(true);
-    try {
-      const result = await purchaseRemoveAds(user.uid);
-      if (result.success) {
-        setIsPremium(true);
-        Alert.alert(
-          getTranslation('purchaseSuccess'),
-          getTranslation('purchaseSuccessMsg')
-        );
-      } else if (result.error !== 'cancelled') {
-        Alert.alert(
-          getTranslation('purchaseFailed'),
-          result.error
-        );
-      }
-    } catch (error) {
-      Alert.alert(getTranslation('error'), error.message);
+    if (!isIAPAvailable()) {
+      Alert.alert(
+        getTranslation('notAvailable'),
+        getTranslation('notAvailableMsg')
+      );
+      return;
     }
-    setIsLoading(false);
+
+    setIsLoadingPurchase(true);
+    try {
+      console.log('Starting purchase...');
+
+      // 구매 전에 상품 정보 먼저 가져오기(필수)
+      const products = await getProducts();
+      if (!products || products.length === 0) {
+        throw new Error('Product not found. Please try again later.');
+      }
+      console.log('Products loaded:', products);
+
+      await purchaseRemoveAds();
+      console.log('Purchase request sent');
+      // 결과는 AuthContext의 purchaseListener에서 처리됨
+    } catch (error) {
+      console.error('Purchase error:', error);
+      Alert.alert(
+        getTranslation('error'),
+        `${getTranslation('purchaseFailed')}\n\n${error.message || error}`
+      );
+    } finally {
+      setIsLoadingPurchase(false);
+    }
   };
 
-  const handleRestorePurchases = async () => {
-    setIsLoading(true);
+  const handleRestore = async () => {
+    if (!isIAPAvailable()) {
+      Alert.alert(
+        getTranslation('notAvailable'),
+        getTranslation('notAvailableMsg')
+      );
+      return;
+    }
+
+    setIsLoadingPurchase(true);
     try {
-      const result = await restorePurchases(user.uid);
-      if (result.success && result.restored) {
-        setIsPremium(true);
+      const restored = await handleRestorePurchases();
+      if (restored) {
         Alert.alert(
-          getTranslation('restoreSuccess'),
-          getTranslation('restoreSuccessMsg')
+          getTranslation('restored'),
+          getTranslation('restoredMsg')
         );
-      } else if (result.success && !result.restored) {
+      } else {
         Alert.alert(
           getTranslation('noPurchases'),
           getTranslation('noPurchasesMsg')
         );
-      } else {
-        Alert.alert(getTranslation('error'), result.error);
       }
     } catch (error) {
-      Alert.alert(getTranslation('error'), error.message);
+      Alert.alert(
+        getTranslation('error'),
+        getTranslation('restoreFailed')
+      );
+    } finally {
+      setIsLoadingPurchase(false);
     }
-    setIsLoading(false);
   };
 
   const handleDeleteAccount = () => {
@@ -259,95 +274,106 @@ export default function ProfileScreen({ navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Text style={styles.backButtonText}>{getTranslation('back')}</Text>
-          </TouchableOpacity>
-          <Text style={styles.title}>
-            {getTranslation('settings')}
-          </Text>
-        </View>
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+              <Text style={styles.backButtonText}>{getTranslation('back')}</Text>
+            </TouchableOpacity>
+            <Text style={styles.title}>
+              {getTranslation('settings')}
+            </Text>
+            <View style={styles.headerSpacer} />
+          </View>
 
-        <View style={styles.section}>
-          <Text style={styles.label}>
-            {getTranslation('email')}
-          </Text>
-          <Text style={styles.value}>{userProfile?.email}</Text>
-        </View>
+          <View style={styles.section}>
+            <Text style={styles.label}>
+              {getTranslation('nickname')}
+            </Text>
+            <Text style={styles.value}>{userProfile?.displayName}</Text>
+          </View>
 
-        <View style={styles.section}>
-          <Text style={styles.label}>
-            {getTranslation('nickname')}
-          </Text>
-          <Text style={styles.value}>{userProfile?.displayName}</Text>
-        </View>
+          <View style={styles.divider} />
 
-        <View style={styles.divider} />
+          {/* 광고 제거 섹션 */}
+          {!adsRemoved ? (
+            <View style={styles.adSection}>
+              <Text style={styles.adSectionTitle}>
+                {getTranslation('removeAds')}
+              </Text>
+              <Text style={styles.adSectionDesc}>
+                {getTranslation('removeAdsDesc')}
+              </Text>
 
-        {/* 광고 제거 섹션 */}
-        <View style={styles.premiumSection}>
-          <Text style={styles.premiumTitle}>{getTranslation('removeAds')}</Text>
-          <Text style={styles.premiumDesc}>{getTranslation('removeAdsDesc')}</Text>
-          
-          {isPremium ? (
-            <View style={styles.premiumActive}>
-              <Text style={styles.premiumActiveText}>{getTranslation('premiumActive')}</Text>
-            </View>
-          ) : (
-            <>
               <TouchableOpacity
-                style={[styles.button, styles.purchaseButton, isLoading && styles.buttonDisabled]}
+                style={[styles.button, styles.purchaseButton]}
                 onPress={handlePurchaseRemoveAds}
-                disabled={isLoading}
+                disabled={isLoadingPurchase}
               >
-                <Text style={styles.buttonText}>
-                  {getTranslation('purchase')} ({price})
-                </Text>
+                {isLoadingPurchase ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>
+                    {language === 'en' ? `Remove Ads - ${productPrice}` :
+                     language === 'ja' ? `広告を削除 - ${productPrice}` :
+                     language === 'zh' ? `移除广告 - ${productPrice}` :
+                     `Eliminar Anuncios - ${productPrice}`}
+                  </Text>
+                )}
               </TouchableOpacity>
-              
+
               <TouchableOpacity
-                style={[styles.restoreButton, isLoading && styles.buttonDisabled]}
-                onPress={handleRestorePurchases}
-                disabled={isLoading}
+                style={styles.restoreButton}
+                onPress={handleRestore}
+                disabled={isLoadingPurchase}
               >
                 <Text style={styles.restoreButtonText}>
                   {getTranslation('restore')}
                 </Text>
               </TouchableOpacity>
-            </>
+            </View>
+          ) : (
+            <View style={styles.adRemovedSection}>
+              <Text style={styles.adRemovedText}>
+                {getTranslation('adsRemoved')}
+              </Text>
+            </View>
           )}
-        </View>
 
-        <View style={styles.divider} />
+          <View style={styles.divider} />
 
-        <TouchableOpacity
-          style={[styles.button, styles.logoutButton]}
-          onPress={logout}
-        >
-          <Text style={styles.buttonText}>
-            {getTranslation('logout')}
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, styles.logoutButton]}
+            onPress={logout}
+          >
+            <Text style={styles.buttonText}>
+              {getTranslation('logout')}
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.button, styles.deleteButton]}
-          onPress={handleDeleteAccount}
-        >
-          <Text style={styles.buttonText}>
-            {getTranslation('deleteAccount')}
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          <TouchableOpacity
+            style={[styles.button, styles.deleteButton]}
+            onPress={handleDeleteAccount}
+          >
+            <Text style={styles.buttonText}>
+              {getTranslation('deleteAccount')}
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#5f4dee',
+  },
   container: {
     flex: 1,
     backgroundColor: '#5f4dee',
@@ -361,8 +387,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 30,
   },
+  headerSpacer: {
+    width: 60,
+  },
   backButton: {
     padding: 10,
+    minWidth: 60,
   },
   backButtonText: {
     fontSize: 16,
@@ -377,38 +407,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   section: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    marginBottom: 20,
   },
   label: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#ffffff',
     marginBottom: 5,
   },
   value: {
     fontSize: 16,
-    color: '#666',
+    color: '#333',
     padding: 12,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  input: {
-    fontSize: 16,
-    padding: 12,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
   },
   button: {
     backgroundColor: '#667eea',
@@ -416,14 +428,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 10,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  buttonDisabled: {
-    backgroundColor: '#ccc',
   },
   buttonText: {
     color: '#fff',
@@ -431,57 +435,55 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   logoutButton: {
-    backgroundColor: '#ff9500',
+    backgroundColor: '#FF9500',
   },
   deleteButton: {
     backgroundColor: '#FF3B30',
   },
   divider: {
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     marginVertical: 20,
   },
-  premiumSection: {
+  adSection: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 12,
     padding: 20,
-    marginBottom: 15,
-    alignItems: 'center',
+    borderRadius: 12,
+    marginBottom: 10,
   },
-  premiumTitle: {
-    fontSize: 20,
+  adSectionTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 8,
   },
-  premiumDesc: {
+  adSectionDesc: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  premiumActive: {
-    backgroundColor: '#34C759',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  premiumActiveText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    marginBottom: 16,
+    lineHeight: 20,
   },
   purchaseButton: {
     backgroundColor: '#5856D6',
-    width: '100%',
   },
   restoreButton: {
-    padding: 10,
-    marginTop: 10,
+    padding: 12,
+    alignItems: 'center',
   },
   restoreButtonText: {
     color: '#5856D6',
     fontSize: 14,
-    textDecorationLine: 'underline',
+  },
+  adRemovedSection: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  adRemovedText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#5856D6',
   },
 });

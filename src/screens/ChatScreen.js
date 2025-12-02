@@ -349,10 +349,16 @@ export default function ChatScreen({ route, navigation }) {
       if (otherUser?.pushToken && 
           otherUser.id !== user.uid && 
           otherUser.pushToken !== userProfile?.pushToken) {
-        const isKorean = (userProfile?.language || 'ko') === 'ko';
+        const lang = userProfile?.language || 'en';
+        const pushTitles = {
+          en: `Message from ${userProfile.displayName}`,
+          es: `Mensaje de ${userProfile.displayName}`,
+          zh: `来自 ${userProfile.displayName} 的消息`,
+          ja: `${userProfile.displayName}さんからメッセージ`
+        };
         await sendPushNotification(
           otherUser.pushToken,
-          `${userProfile.displayName}${isKorean ? '님의 메시지' : 'さんからメッセージ'}`,
+          pushTitles[lang] || pushTitles.en,
           messageText,
           { chatRoomId, senderId: user.uid }
         );
@@ -547,7 +553,9 @@ export default function ChatScreen({ route, navigation }) {
   const formatTime = (timestamp) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
-    return date.toLocaleTimeString('ko-KR', {
+    const lang = userProfile?.language || 'en';
+    const locales = { en: 'en-US', es: 'es-ES', zh: 'zh-CN', ja: 'ja-JP' };
+    return date.toLocaleTimeString(locales[lang] || 'en-US', {
       hour: '2-digit',
       minute: '2-digit',
     });

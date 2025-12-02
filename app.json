@@ -2,7 +2,7 @@
   "expo": {
     "name": "TetraTalk",
     "slug": "tetratalk",
-    "version": "1.0.3",
+    "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -14,6 +14,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.tetratalk.app",
+      "buildNumber": "32",
       "config": {
         "googleMobileAdsAppId": "ca-app-pub-5837885590326347~5503619440"
       },
@@ -51,7 +52,8 @@
           "iosAppId": "ca-app-pub-5837885590326347~5503619440",
           "delayAppMeasurementInit": false
         }
-      ]
+      ],
+      "react-native-iap"
     ]
   }
 }

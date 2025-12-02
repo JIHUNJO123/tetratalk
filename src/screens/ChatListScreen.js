@@ -205,6 +205,12 @@ export default function ChatListScreen({ navigation }) {
         es: 'No hay salas de chat',
         zh: '没有聊天室',
         ja: 'チャットルームがありません'
+      },
+      settings: {
+        en: '⚙️',
+        es: '⚙️',
+        zh: '⚙️',
+        ja: '⚙️'
       }
     };
     return translations[key]?.[language] || translations[key]?.en || '';
@@ -425,26 +431,58 @@ export default function ChatListScreen({ navigation }) {
   };
 
   const handleRejectRequest = async (chatRoomId) => {
+    const confirmMessage = getTranslation('rejectQuestion');
+    
     if (typeof window !== 'undefined' && window.confirm) {
-      const confirmMessage = `⚠️ ${getTranslation('rejectChat')}\n\n${getTranslation('rejectQuestion')}`;
-      if (window.confirm(confirmMessage)) {
-        try {
-          console.log('Rejecting request:', chatRoomId);
-          await updateDoc(doc(db, 'chatRooms', chatRoomId), {
-            status: 'rejected',
-            rejectedAt: serverTimestamp(),
-          });
-          console.log('Chat request rejected');
-          if (typeof window !== 'undefined' && window.alert) {
-            window.alert(`✅ ${getTranslation('requestRejected')}\n\n${getTranslation('requestRejectedMessage')}`);
-          }
-        } catch (error) {
-          console.error('Error rejecting request:', error);
-          console.error('Error details:', error.message);
-          if (typeof window !== 'undefined' && window.alert) {
-            window.alert(`❌ ${getTranslation('rejectionFailed')}\n\n${error.message}`);
-          }
-        }
+      // 웹에서는 window.confirm 사용
+      if (window.confirm(`⚠️ ${getTranslation('rejectChat')}\n\n${confirmMessage}`)) {
+        await processReject(chatRoomId);
+      }
+    } else {
+      // 모바일에서는 Alert.alert 사용
+      Alert.alert(
+        getTranslation('rejectChat'),
+        confirmMessage,
+        [
+          { text: getTranslation('cancel'), style: 'cancel' },
+          {
+            text: getTranslation('reject'),
+            style: 'destructive',
+            onPress: () => processReject(chatRoomId),
+          },
+        ]
+      );
+    }
+  };
+
+  const processReject = async (chatRoomId) => {
+    try {
+      console.log('Rejecting request:', chatRoomId);
+      await updateDoc(doc(db, 'chatRooms', chatRoomId), {
+        status: 'rejected',
+        rejectedAt: serverTimestamp(),
+      });
+      console.log('Chat request rejected');
+      
+      if (typeof window !== 'undefined' && window.alert) {
+        window.alert(`✅ ${getTranslation('requestRejected')}\n\n${getTranslation('requestRejectedMessage')}`);
+      } else {
+        Alert.alert(
+          getTranslation('requestRejected'),
+          getTranslation('requestRejectedMessage')
+        );
+      }
+    } catch (error) {
+      console.error('Error rejecting request:', error);
+      console.error('Error details:', error.message);
+      
+      if (typeof window !== 'undefined' && window.alert) {
+        window.alert(`❌ ${getTranslation('rejectionFailed')}\n\n${error.message}`);
+      } else {
+        Alert.alert(
+          getTranslation('rejectionFailed'),
+          error.message
+        );
       }
     }
   };
@@ -547,13 +585,20 @@ export default function ChatListScreen({ navigation }) {
     const date = new Date(timestamp);
     const now = new Date();
     const diff = now - date;
-    const isKorean = (userProfile?.language || 'ko') === 'ko';
+    const lang = userProfile?.language || 'en';
     
-    if (diff < 60000) return isKorean ? '방금 전' : 'ただいま';
-    if (diff < 3600000) return `${Math.floor(diff / 60000)}${isKorean ? '분 전' : '分前'}`;
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)}${isKorean ? '시간 전' : '時間前'}`;
+    const timeTexts = {
+      justNow: { en: 'Just now', es: 'Ahora', zh: '刚刚', ja: 'たった今' },
+      minutesAgo: { en: 'm ago', es: 'm', zh: '分钟前', ja: '分前' },
+      hoursAgo: { en: 'h ago', es: 'h', zh: '小时前', ja: '時間前' }
+    };
     
-    return date.toLocaleDateString(isKorean ? 'ko-KR' : 'ja-JP');
+    if (diff < 60000) return timeTexts.justNow[lang] || timeTexts.justNow.en;
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}${timeTexts.minutesAgo[lang] || timeTexts.minutesAgo.en}`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}${timeTexts.hoursAgo[lang] || timeTexts.hoursAgo.en}`;
+    
+    const locales = { en: 'en-US', es: 'es-ES', zh: 'zh-CN', ja: 'ja-JP' };
+    return date.toLocaleDateString(locales[lang] || 'en-US');
   };
 
   return (
@@ -566,6 +611,11 @@ export default function ChatListScreen({ navigation }) {
           <Text style={styles.userInfo}>
             {userProfile?.displayName} {getLanguageFlag(userProfile?.language)}
           </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.settingsButton}>
+            <Text style={styles.settingsText}>
+              {getTranslation('settings')}
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity onPress={handleDeleteAccount} style={styles.deleteButton}>
             <Text style={styles.deleteText}>
               {getTranslation('delete')}
@@ -639,6 +689,13 @@ const styles = StyleSheet.create({
   userInfo: {
     fontSize: 14,
     color: 'rgba(255, 255, 255, 0.9)',
+  },
+  settingsButton: {
+    padding: 8,
+  },
+  settingsText: {
+    color: '#ffffff',
+    fontSize: 22,
   },
   profileButton: {
     padding: 5,

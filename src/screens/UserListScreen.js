@@ -131,6 +131,42 @@ export default function UserListScreen({ navigation }) {
         es: 'No',
         zh: '否',
         ja: 'いいえ'
+      },
+      error: {
+        en: 'Error',
+        es: 'Error',
+        zh: '错误',
+        ja: 'エラー'
+      },
+      userDeleted: {
+        en: 'This user has been deleted.',
+        es: 'Este usuario ha sido eliminado.',
+        zh: '该用户已被删除。',
+        ja: '退会したユーザーです。'
+      },
+      alreadyRequested: {
+        en: 'Already Requested',
+        es: 'Ya Solicitado',
+        zh: '已请求',
+        ja: 'すでにリクエスト済み'
+      },
+      alreadyRequestedMessage: {
+        en: 'You have already sent a chat request to this user.\nWaiting for their response.',
+        es: 'Ya has enviado una solicitud de chat a este usuario.\nEsperando su respuesta.',
+        zh: '您已向此用户发送聊天请求。\n等待对方回复。',
+        ja: 'このユーザーにすでにチャットリクエストを送信しました。\n相手の返事を待っています。'
+      },
+      newRequest: {
+        en: 'New Request',
+        es: 'Nueva Solicitud',
+        zh: '新请求',
+        ja: '新しいリクエスト'
+      },
+      newRequestMessage: {
+        en: 'You have a chat request from this user.\nYou can accept/reject in the chat list.',
+        es: 'Tienes una solicitud de chat de este usuario.\nPuedes aceptar/rechazar en la lista de chat.',
+        zh: '您收到了此用户的聊天请求。\n您可以在聊天列表中接受/拒绝。',
+        ja: 'このユーザーからのチャットリクエストがあります。\nチャットリストで承認/拒否できます。'
       }
     };
     return translations[key]?.[language] || translations[key]?.en || '';
@@ -276,14 +312,13 @@ export default function UserListScreen({ navigation }) {
     
     // 상대방이 탈퇴한 사용자인지 확인
     if (otherUser.deleted) {
-      const isEnglish = (userProfile?.language || 'en') === 'en';
       if (typeof window !== 'undefined' && window.alert) {
-        window.alert(`❌ ${isEnglish ? 'Error' : 'エラー'}\n\n${isEnglish ? 'This user has been deleted.' : '退会したユーザーです。'}`);
+        window.alert(`❌ ${getTranslation('error')}\n\n${getTranslation('userDeleted')}`);
+      } else {
+        Alert.alert(getTranslation('error'), getTranslation('userDeleted'));
       }
       return;
     }
-    
-    const isEnglish = (userProfile?.language || 'en') === 'en';
     
     try {
       // 이미 채팅방이 있는지 확인
@@ -309,23 +344,23 @@ export default function UserListScreen({ navigation }) {
           if (existingRoom.requestedBy === user.uid) {
             console.log('Already requested, showing alert');
             if (typeof window !== 'undefined' && window.alert) {
-              window.alert(`⏳ ${isEnglish ? 'Already Requested' : 'すでにリクエスト済み'}\n\n${isEnglish ? 'You have already sent a chat request to this user.\nWaiting for their response.' : 'このユーザーにすでにチャットリクエストを送信しました。\n相手の返事を待っています。'}`);
+              window.alert(`⏳ ${getTranslation('alreadyRequested')}\n\n${getTranslation('alreadyRequestedMessage')}`);
             } else {
               // 모바일에서는 Alert 사용
               Alert.alert(
-                isEnglish ? 'Already Requested' : 'すでにリクエスト済み',
-                isEnglish ? 'You have already sent a chat request to this user.\nWaiting for their response.' : 'このユーザーにすでにチャットリクエストを送信しました。\n相手の返事を待っています。'
+                getTranslation('alreadyRequested'),
+                getTranslation('alreadyRequestedMessage')
               );
             }
           } else {
             // 상대방이 나에게 요청한 경우 - ChatList로 이동
             console.log('New request from them, showing alert');
             if (typeof window !== 'undefined' && window.alert) {
-              window.alert(`💬 ${isEnglish ? 'New Request' : '新しいリクエスト'}\n\n${isEnglish ? 'You have a chat request from this user.\nYou can accept/reject in the chat list.' : 'このユーザーからのチャットリクエストがあります。\nチャットリストで承認/拒否できます。'}`);
+              window.alert(`💬 ${getTranslation('newRequest')}\n\n${getTranslation('newRequestMessage')}`);
             } else {
               Alert.alert(
-                isEnglish ? 'New Request' : '新しいリクエスト',
-                isEnglish ? 'You have a chat request from this user.\nYou can accept/reject in the chat list.' : 'このユーザーからのチャットリクエストがあります。\nチャットリストで承認/拒否できます。'
+                getTranslation('newRequest'),
+                getTranslation('newRequestMessage')
               );
             }
             navigation.goBack();

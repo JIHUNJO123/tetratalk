@@ -6,6 +6,7 @@ import LoginScreen from '../screens/LoginScreen';
 import ChatListScreen from '../screens/ChatListScreen';
 import UserListScreen from '../screens/UserListScreen';
 import ChatScreen from '../screens/ChatScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 import TermsScreen from '../screens/TermsScreen';
 import { AuthContext } from '../context/AuthContext';
 
@@ -31,6 +32,7 @@ export default function AppNavigator() {
 						<Stack.Screen name="ChatList" component={ChatListScreen} />
 						<Stack.Screen name="UserList" component={UserListScreen} />
 						<Stack.Screen name="Chat" component={ChatScreen} />
+						<Stack.Screen name="Profile" component={ProfileScreen} />
 					</>
 				) : (
 					<>
