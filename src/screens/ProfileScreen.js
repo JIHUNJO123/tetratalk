@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,13 +13,101 @@ import {
 import { doc, updateDoc, query, collection, where, getDocs } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
+import { purchaseRemoveAds, restorePurchases, checkPremiumStatus, getRemoveAdsPrice } from '../services/iap';
 
 export default function ProfileScreen({ navigation }) {
   const { user, userProfile, logout, deleteAccount } = useAuth();
   const language = userProfile?.language || 'en';
+  const [isPremium, setIsPremium] = useState(false);
+  const [price, setPrice] = useState('$2.99');
+  const [isLoading, setIsLoading] = useState(false);
+  
+  useEffect(() => {
+    const loadPremiumStatus = async () => {
+      if (user?.uid) {
+        const premium = await checkPremiumStatus(user.uid);
+        setIsPremium(premium);
+        const priceStr = await getRemoveAdsPrice();
+        setPrice(priceStr);
+      }
+    };
+    loadPremiumStatus();
+  }, [user]);
 
   const getTranslation = (key) => {
     const translations = {
+      removeAds: {
+        en: 'Remove Ads',
+        es: 'Eliminar Anuncios',
+        zh: '移除广告',
+        ja: '広告を削除'
+      },
+      removeAdsDesc: {
+        en: 'Enjoy ad-free experience',
+        es: 'Disfrute de una experiencia sin anuncios',
+        zh: '享受无广告体验',
+        ja: '広告なしの体験をお楽しみください'
+      },
+      purchase: {
+        en: 'Purchase',
+        es: 'Comprar',
+        zh: '购买',
+        ja: '購入'
+      },
+      restore: {
+        en: 'Restore Purchases',
+        es: 'Restaurar Compras',
+        zh: '恢复购买',
+        ja: '購入を復元'
+      },
+      premiumActive: {
+        en: '✓ Premium Active',
+        es: '✓ Premium Activo',
+        zh: '✓ 高级版已激活',
+        ja: '✓ プレミアム有効'
+      },
+      purchaseSuccess: {
+        en: 'Purchase Successful',
+        es: 'Compra Exitosa',
+        zh: '购买成功',
+        ja: '購入完了'
+      },
+      purchaseSuccessMsg: {
+        en: 'Ads have been removed. Thank you for your purchase!',
+        es: '¡Los anuncios han sido eliminados. Gracias por su compra!',
+        zh: '广告已删除。感谢您的购买！',
+        ja: '広告が削除されました。ご購入ありがとうございます！'
+      },
+      purchaseFailed: {
+        en: 'Purchase Failed',
+        es: 'Compra Fallida',
+        zh: '购买失败',
+        ja: '購入失敗'
+      },
+      restoreSuccess: {
+        en: 'Restore Successful',
+        es: 'Restauración Exitosa',
+        zh: '恢复成功',
+        ja: '復元完了'
+      },
+      restoreSuccessMsg: {
+        en: 'Your purchase has been restored.',
+        es: 'Su compra ha sido restaurada.',
+        zh: '您的购买已恢复。',
+        ja: '購入が復元されました。'
+      },
+      noPurchases: {
+        en: 'No Purchases Found',
+        es: 'No se Encontraron Compras',
+        zh: '未找到购买记录',
+        ja: '購入履歴がありません'
+      },
+      noPurchasesMsg: {
+        en: 'No previous purchases found to restore.',
+        es: 'No se encontraron compras anteriores para restaurar.',
+        zh: '没有找到可恢复的购买记录。',
+        ja: '復元可能な購入履歴がありません。'
+      },
       deleteAccount: {
         en: 'Delete Account',
         es: 'Eliminar Cuenta',
@@ -102,6 +190,52 @@ export default function ProfileScreen({ navigation }) {
     return translations[key]?.[language] || translations[key]?.en || '';
   };
 
+  const handlePurchaseRemoveAds = async () => {
+    setIsLoading(true);
+    try {
+      const result = await purchaseRemoveAds(user.uid);
+      if (result.success) {
+        setIsPremium(true);
+        Alert.alert(
+          getTranslation('purchaseSuccess'),
+          getTranslation('purchaseSuccessMsg')
+        );
+      } else if (result.error !== 'cancelled') {
+        Alert.alert(
+          getTranslation('purchaseFailed'),
+          result.error
+        );
+      }
+    } catch (error) {
+      Alert.alert(getTranslation('error'), error.message);
+    }
+    setIsLoading(false);
+  };
+
+  const handleRestorePurchases = async () => {
+    setIsLoading(true);
+    try {
+      const result = await restorePurchases(user.uid);
+      if (result.success && result.restored) {
+        setIsPremium(true);
+        Alert.alert(
+          getTranslation('restoreSuccess'),
+          getTranslation('restoreSuccessMsg')
+        );
+      } else if (result.success && !result.restored) {
+        Alert.alert(
+          getTranslation('noPurchases'),
+          getTranslation('noPurchasesMsg')
+        );
+      } else {
+        Alert.alert(getTranslation('error'), result.error);
+      }
+    } catch (error) {
+      Alert.alert(getTranslation('error'), error.message);
+    }
+    setIsLoading(false);
+  };
+
   const handleDeleteAccount = () => {
     Alert.alert(
       getTranslation('deleteAccount'),
@@ -151,6 +285,42 @@ export default function ProfileScreen({ navigation }) {
             {getTranslation('nickname')}
           </Text>
           <Text style={styles.value}>{userProfile?.displayName}</Text>
+        </View>
+
+        <View style={styles.divider} />
+
+        {/* 광고 제거 섹션 */}
+        <View style={styles.premiumSection}>
+          <Text style={styles.premiumTitle}>{getTranslation('removeAds')}</Text>
+          <Text style={styles.premiumDesc}>{getTranslation('removeAdsDesc')}</Text>
+          
+          {isPremium ? (
+            <View style={styles.premiumActive}>
+              <Text style={styles.premiumActiveText}>{getTranslation('premiumActive')}</Text>
+            </View>
+          ) : (
+            <>
+              <TouchableOpacity
+                style={[styles.button, styles.purchaseButton, isLoading && styles.buttonDisabled]}
+                onPress={handlePurchaseRemoveAds}
+                disabled={isLoading}
+              >
+                <Text style={styles.buttonText}>
+                  {getTranslation('purchase')} ({price})
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[styles.restoreButton, isLoading && styles.buttonDisabled]}
+                onPress={handleRestorePurchases}
+                disabled={isLoading}
+              >
+                <Text style={styles.restoreButtonText}>
+                  {getTranslation('restore')}
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
 
         <View style={styles.divider} />
@@ -268,7 +438,50 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: '#ddd',
+    backgroundColor: 'rgba(255,255,255,0.3)',
     marginVertical: 20,
+  },
+  premiumSection: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 15,
+    alignItems: 'center',
+  },
+  premiumTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+  premiumDesc: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  premiumActive: {
+    backgroundColor: '#34C759',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  premiumActiveText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  purchaseButton: {
+    backgroundColor: '#5856D6',
+    width: '100%',
+  },
+  restoreButton: {
+    padding: 10,
+    marginTop: 10,
+  },
+  restoreButtonText: {
+    color: '#5856D6',
+    fontSize: 14,
+    textDecorationLine: 'underline',
   },
 });

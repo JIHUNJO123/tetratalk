@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Platform } from 'react-native';
 import Constants from 'expo-constants';
+import { checkPremiumStatus } from '../services/iap';
 
 // 웹에서는 AdMob을 import하지 않음
 let BannerAd, BannerAdSize, TestIds;
@@ -15,7 +16,24 @@ if (Platform.OS !== 'web') {
 const resolvedTestFlag = Constants?.expoConfig?.extra?.admobTestMode;
 const useTestAds = typeof resolvedTestFlag === 'boolean' ? resolvedTestFlag : __DEV__;
 
-export default function AdMobBannerComponent({ screenType }) {
+export default function AdMobBannerComponent({ screenType, userId }) {
+  const [isPremium, setIsPremium] = useState(false);
+  
+  useEffect(() => {
+    const checkPremium = async () => {
+      if (userId) {
+        const premium = await checkPremiumStatus(userId);
+        setIsPremium(premium);
+      }
+    };
+    checkPremium();
+  }, [userId]);
+  
+  // 프리미엄 사용자는 광고 숨김
+  if (isPremium) {
+    return null;
+  }
+  
   // 웹에서는 광고 대신 빈 공간 표시
   if (Platform.OS === 'web') {
     return <View style={{ height: 50 }} />;

@@ -498,11 +498,9 @@ export default function ChatListScreen({ navigation }) {
                   <Text style={styles.unreadText}>N</Text>
                 </View>
               )}
-              {isPending && (
+              {isPending && isRequester && (
                 <Text style={styles.pendingBadge}>
-                  {isRequester 
-                    ? getTranslation('waiting')
-                    : getTranslation('newRequest')}
+                  {getTranslation('waiting')}
                 </Text>
               )}
             </View>
@@ -607,7 +605,7 @@ export default function ChatListScreen({ navigation }) {
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.listContent}
           />
-          <AdMobBannerComponent screenType="chatList" />
+          <AdMobBannerComponent screenType="chatList" userId={user?.uid} />
         </View>
       )}
     </View>
@@ -715,9 +713,10 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   chatRoomName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 'bold',
     flex: 1,
+    maxWidth: 150,
   },
   unreadBadge: {
     backgroundColor: '#FF3B30',
@@ -736,19 +735,19 @@ const styles = StyleSheet.create({
   pendingBadge: {
     backgroundColor: '#FF9500',
     color: '#fff',
-    fontSize: 10,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
+    fontSize: 9,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 6,
     fontWeight: 'bold',
-    marginLeft: 8,
+    marginLeft: 6,
   },
   chatRoomTime: {
     fontSize: 12,
     color: '#999',
   },
   lastMessage: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#666',
   },
   requestButtons: {
@@ -757,24 +756,24 @@ const styles = StyleSheet.create({
   },
   acceptButton: {
     backgroundColor: '#34C759',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
   },
   acceptButtonText: {
     color: '#fff',
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: 'bold',
   },
   rejectButton: {
     backgroundColor: '#FF3B30',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
   },
   rejectButtonText: {
     color: '#fff',
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: 'bold',
   },
   emptyContainer: {

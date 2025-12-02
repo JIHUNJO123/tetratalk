@@ -735,7 +735,7 @@ export default function ChatScreen({ route, navigation }) {
         </TouchableOpacity>
       </View>
       
-      <AdMobBannerComponent screenType="chat" />
+      <AdMobBannerComponent screenType="chat" userId={user?.uid} />
     </KeyboardAvoidingView>
   );
 }
@@ -763,18 +763,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: 'bold',
     color: '#ffffff',
+    maxWidth: 180,
   },
   headerSpacer: {
     width: 50,
   },
   menuButton: {
-    padding: 5,
+    padding: 10,
+    minWidth: 44,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   menuButtonText: {
-    fontSize: 24,
+    fontSize: 28,
     color: '#ffffff',
     fontWeight: 'bold',
   },
