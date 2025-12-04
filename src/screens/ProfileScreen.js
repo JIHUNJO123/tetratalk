@@ -315,18 +315,25 @@ export default function ProfileScreen({ navigation }) {
               </Text>
 
               <TouchableOpacity
-                style={[styles.button, styles.purchaseButton]}
+                style={[styles.button, styles.purchaseButton, (!productPrice && !isPriceLoading) && styles.buttonDisabledStyle]}
                 onPress={handlePurchaseRemoveAds}
-                disabled={isLoadingPurchase || isPriceLoading || !productPrice}
+                disabled={isLoadingPurchase || isPriceLoading}
               >
                 {isLoadingPurchase || isPriceLoading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
                   <Text style={styles.buttonText}>
-                    {language === 'en' ? `Remove Ads - ${productPrice}` :
-                     language === 'ja' ? `広告を削除 - ${productPrice}` :
-                     language === 'zh' ? `移除广告 - ${productPrice}` :
-                     `Eliminar Anuncios - ${productPrice}`}
+                    {productPrice ? (
+                      language === 'en' ? `Remove Ads - ${productPrice}` :
+                      language === 'ja' ? `広告を削除 - ${productPrice}` :
+                      language === 'zh' ? `移除广告 - ${productPrice}` :
+                      `Eliminar Anuncios - ${productPrice}`
+                    ) : (
+                      language === 'en' ? 'Remove Ads' :
+                      language === 'ja' ? '広告を削除' :
+                      language === 'zh' ? '移除广告' :
+                      'Eliminar Anuncios'
+                    )}
                   </Text>
                 )}
               </TouchableOpacity>
