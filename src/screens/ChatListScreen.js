@@ -616,16 +616,6 @@ export default function ChatListScreen({ navigation }) {
               {getTranslation('settings')}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleDeleteAccount} style={styles.deleteButton}>
-            <Text style={styles.deleteText}>
-              {getTranslation('delete')}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-            <Text style={styles.logoutText}>
-              {getTranslation('logout')}
-            </Text>
-          </TouchableOpacity>
         </View>
       </View>
 
