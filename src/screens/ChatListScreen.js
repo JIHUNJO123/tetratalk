@@ -684,10 +684,13 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    flexWrap: 'wrap',
+    gap: 6,
+    maxWidth: '60%',
+    justifyContent: 'flex-end',
   },
   userInfo: {
-    fontSize: 14,
+    fontSize: 12,
     color: 'rgba(255, 255, 255, 0.9)',
   },
   settingsButton: {
@@ -695,7 +698,7 @@ const styles = StyleSheet.create({
   },
   settingsText: {
     color: '#ffffff',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
   },
   profileButton: {
@@ -711,7 +714,7 @@ const styles = StyleSheet.create({
   },
   deleteText: {
     color: '#ff6b6b',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
   },
   logoutButton: {
@@ -719,7 +722,7 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     color: '#ffffff',
-    fontSize: 14,
+    fontSize: 12,
   },
   newChatButton: {
     backgroundColor: '#667eea',

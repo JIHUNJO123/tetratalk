@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
     color: '#2196F3',
   },
   lastUpdated: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#666',
     marginBottom: 20,
     fontStyle: 'italic',

@@ -753,7 +753,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   dropdownArrow: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#666',
     marginLeft: 8,
   },

@@ -17,7 +17,8 @@ import { purchaseRemoveAds, getProducts, isIAPAvailable } from '../services/iap'
 export default function ProfileScreen({ navigation }) {
   const { user, userProfile, logout, deleteAccount, adsRemoved, handleRestorePurchases } = useAuth();
   const [isLoadingPurchase, setIsLoadingPurchase] = useState(false);
-  const [productPrice, setProductPrice] = useState('$2.99');
+  const [productPrice, setProductPrice] = useState('');
+  const [isPriceLoading, setIsPriceLoading] = useState(true);
   
   const language = userProfile?.language || 'en';
 
@@ -25,10 +26,14 @@ export default function ProfileScreen({ navigation }) {
   useEffect(() => {
     const fetchProducts = async () => {
       if (isIAPAvailable() && !adsRemoved) {
+        setIsPriceLoading(true);
         const products = await getProducts();
         if (products.length > 0) {
-          setProductPrice(products[0].localizedPrice || products[0].price || '$2.99');
+          setProductPrice(products[0].localizedPrice || products[0].price || '');
         }
+        setIsPriceLoading(false);
+      } else {
+        setIsPriceLoading(false);
       }
     };
     fetchProducts();
@@ -312,9 +317,9 @@ export default function ProfileScreen({ navigation }) {
               <TouchableOpacity
                 style={[styles.button, styles.purchaseButton]}
                 onPress={handlePurchaseRemoveAds}
-                disabled={isLoadingPurchase}
+                disabled={isLoadingPurchase || isPriceLoading || !productPrice}
               >
-                {isLoadingPurchase ? (
+                {isLoadingPurchase || isPriceLoading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
                   <Text style={styles.buttonText}>

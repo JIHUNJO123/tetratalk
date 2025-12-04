@@ -807,7 +807,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   senderName: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#666',
     marginBottom: 5,
     marginLeft: 10,
@@ -841,7 +841,7 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(0, 0, 0, 0.1)',
   },
   translationLabel: {
-    fontSize: 11,
+    fontSize: 13,
     color: '#999',
     marginBottom: 3,
   },
@@ -851,7 +851,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   messageTime: {
-    fontSize: 11,
+    fontSize: 13,
     color: '#999',
     marginHorizontal: 10,
   },
