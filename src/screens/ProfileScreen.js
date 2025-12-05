@@ -202,22 +202,19 @@ export default function ProfileScreen({ navigation }) {
     try {
       console.log('Starting purchase...');
 
-      // 구매 전에 상품 정보 먼저 가져오기(필수)
-      const products = await getProducts();
-      if (!products || products.length === 0) {
-        throw new Error('Product not found. Please try again later.');
-      }
-      console.log('Products loaded:', products);
-
-      await purchaseRemoveAds();
-      console.log('Purchase request sent');
+      // 구매 요청 (상품 정보는 내부에서 처리)
+      const result = await purchaseRemoveAds();
+      console.log('Purchase request result:', result);
       // 결과는 AuthContext의 purchaseListener에서 처리됨
     } catch (error) {
       console.error('Purchase error:', error);
-      Alert.alert(
-        getTranslation('error'),
-        `${getTranslation('purchaseFailed')}\n\n${error.message || error}`
-      );
+      // 사용자에게 친화적인 에러 메시지
+      if (error.code !== 'E_USER_CANCELLED') {
+        Alert.alert(
+          getTranslation('error'),
+          getTranslation('purchaseFailed')
+        );
+      }
     } finally {
       setIsLoadingPurchase(false);
     }

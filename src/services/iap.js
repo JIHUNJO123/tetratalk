@@ -9,20 +9,33 @@ export const PRODUCT_IDS = {
 
 const productIds = [PRODUCT_IDS.REMOVE_ADS];
 
+let isConnected = false;
+
 // 인앱결제 초기화
 export async function initializeIAP() {
   try {
+    if (isConnected) {
+      console.log('IAP already connected');
+      return true;
+    }
+    
     const result = await RNIap.initConnection();
     console.log('IAP connection result:', result);
+    isConnected = true;
 
     // iOS에서 pending transactions 정리
     if (Platform.OS === 'ios') {
-      await RNIap.clearTransactionIOS();
+      try {
+        await RNIap.clearTransactionIOS();
+      } catch (clearError) {
+        console.log('Clear transaction warning:', clearError);
+      }
     }
 
     return true;
   } catch (error) {
     console.error('IAP connection failed:', error);
+    isConnected = false;
     return false;
   }
 }
@@ -30,18 +43,15 @@ export async function initializeIAP() {
 // 상품 정보 가져오기
 export async function getProducts() {
   try {
+    // 연결 확인
+    if (!isConnected) {
+      await initializeIAP();
+    }
+    
     console.log('Fetching products with SKUs:', productIds);
     const products = await RNIap.getProducts({ skus: productIds });
     console.log('Products fetched:', JSON.stringify(products, null, 2));
     console.log('Products count:', products?.length || 0);
-
-    if (!products || products.length === 0) {
-      console.warn('No products found. Possible reasons:');
-      console.warn('1. IAP product not yet approved in App Store Connect');
-      console.warn('2. Product ID mismatch');
-      console.warn('3. App not running from TestFlight');
-      console.warn('4. Sandbox account not configured');
-    }
 
     return products || [];
   } catch (error) {
@@ -55,6 +65,11 @@ export async function getProducts() {
 // 광고 제거 구매
 export async function purchaseRemoveAds() {
   try {
+    // 연결 확인
+    if (!isConnected) {
+      await initializeIAP();
+    }
+    
     console.log('Requesting purchase for:', PRODUCT_IDS.REMOVE_ADS);
 
     // iOS와 Android에서 다른 파라미터 사용
@@ -73,6 +88,10 @@ export async function purchaseRemoveAds() {
     return true;
   } catch (error) {
     console.error('Purchase failed:', error);
+    // 사용자 취소는 에러로 처리하지 않음
+    if (error.code === 'E_USER_CANCELLED') {
+      return false;
+    }
     throw error;
   }
 }
