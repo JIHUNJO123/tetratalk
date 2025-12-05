@@ -65,6 +65,12 @@ export default function ProfileScreen({ navigation }) {
         zh: '恢复购买',
         ja: '購入を復元'
       },
+      restoreHint: {
+        en: 'Restore previous purchase after reinstalling or changing device',
+        es: 'Restaurar compra anterior después de reinstalar o cambiar de dispositivo',
+        zh: '重新安装或更换设备后恢复之前的购买',
+        ja: '再インストールまたは機種変更後に以前の購入を復元'
+      },
       restored: {
         en: 'Restored',
         es: 'Restaurado',
@@ -161,6 +167,12 @@ export default function ProfileScreen({ navigation }) {
         zh: '恢复购买失败。',
         ja: '購入の復元に失敗しました。'
       },
+      iapUnavailable: {
+        en: 'In-app purchase is temporarily unavailable. Please try again later.',
+        es: 'La compra dentro de la aplicación no está disponible temporalmente. Inténtelo más tarde.',
+        zh: '应用内购买暂时不可用。请稍后再试。',
+        ja: 'アプリ内課金は現在利用できません。後でもう一度お試しください。'
+      },
       back: {
         en: '← Back',
         es: '← Volver',
@@ -191,10 +203,8 @@ export default function ProfileScreen({ navigation }) {
 
   const handlePurchaseRemoveAds = async () => {
     if (!isIAPAvailable()) {
-      Alert.alert(
-        getTranslation('notAvailable'),
-        getTranslation('notAvailableMsg')
-      );
+      // 조용히 실패 처리 - 에러 메시지 표시 안 함
+      console.log('IAP not available on this device');
       return;
     }
 
@@ -208,13 +218,7 @@ export default function ProfileScreen({ navigation }) {
       // 결과는 AuthContext의 purchaseListener에서 처리됨
     } catch (error) {
       console.error('Purchase error:', error);
-      // 사용자에게 친화적인 에러 메시지
-      if (error.code !== 'E_USER_CANCELLED') {
-        Alert.alert(
-          getTranslation('error'),
-          getTranslation('purchaseFailed')
-        );
-      }
+      // 에러 발생해도 Alert 표시 안 함 - 조용히 처리
     } finally {
       setIsLoadingPurchase(false);
     }
@@ -222,10 +226,7 @@ export default function ProfileScreen({ navigation }) {
 
   const handleRestore = async () => {
     if (!isIAPAvailable()) {
-      Alert.alert(
-        getTranslation('notAvailable'),
-        getTranslation('notAvailableMsg')
-      );
+      console.log('IAP not available on this device');
       return;
     }
 
@@ -237,17 +238,11 @@ export default function ProfileScreen({ navigation }) {
           getTranslation('restored'),
           getTranslation('restoredMsg')
         );
-      } else {
-        Alert.alert(
-          getTranslation('noPurchases'),
-          getTranslation('noPurchasesMsg')
-        );
       }
+      // 복원할 구매가 없으면 조용히 처리
     } catch (error) {
-      Alert.alert(
-        getTranslation('error'),
-        getTranslation('restoreFailed')
-      );
+      console.error('Restore error:', error);
+      // 에러 발생해도 Alert 표시 안 함
     } finally {
       setIsLoadingPurchase(false);
     }
@@ -311,39 +306,47 @@ export default function ProfileScreen({ navigation }) {
                 {getTranslation('removeAdsDesc')}
               </Text>
 
-              <TouchableOpacity
-                style={[styles.button, styles.purchaseButton, (!productPrice && !isPriceLoading) && styles.buttonDisabledStyle]}
-                onPress={handlePurchaseRemoveAds}
-                disabled={isLoadingPurchase || isPriceLoading}
-              >
-                {isLoadingPurchase || isPriceLoading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>
-                    {productPrice ? (
-                      language === 'en' ? `Remove Ads - ${productPrice}` :
-                      language === 'ja' ? `広告を削除 - ${productPrice}` :
-                      language === 'zh' ? `移除广告 - ${productPrice}` :
-                      `Eliminar Anuncios - ${productPrice}`
+              {isPriceLoading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator color="#5856D6" />
+                </View>
+              ) : productPrice ? (
+                <>
+                  <TouchableOpacity
+                    style={[styles.button, styles.purchaseButton]}
+                    onPress={handlePurchaseRemoveAds}
+                    disabled={isLoadingPurchase}
+                  >
+                    {isLoadingPurchase ? (
+                      <ActivityIndicator color="#fff" />
                     ) : (
-                      language === 'en' ? 'Remove Ads' :
-                      language === 'ja' ? '広告を削除' :
-                      language === 'zh' ? '移除广告' :
-                      'Eliminar Anuncios'
+                      <Text style={styles.buttonText}>
+                        {language === 'en' ? `Remove Ads - ${productPrice}` :
+                        language === 'ja' ? `広告を削除 - ${productPrice}` :
+                        language === 'zh' ? `移除广告 - ${productPrice}` :
+                        `Eliminar Anuncios - ${productPrice}`}
+                      </Text>
                     )}
-                  </Text>
-                )}
-              </TouchableOpacity>
+                  </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.restoreButton}
-                onPress={handleRestore}
-                disabled={isLoadingPurchase}
-              >
-                <Text style={styles.restoreButtonText}>
-                  {getTranslation('restore')}
+                  <TouchableOpacity
+                    style={styles.restoreButton}
+                    onPress={handleRestore}
+                    disabled={isLoadingPurchase}
+                  >
+                    <Text style={styles.restoreButtonText}>
+                      {getTranslation('restore')}
+                    </Text>
+                  </TouchableOpacity>
+                  <Text style={styles.restoreHintText}>
+                    {getTranslation('restoreHint')}
+                  </Text>
+                </>
+              ) : (
+                <Text style={styles.iapUnavailableText}>
+                  {getTranslation('iapUnavailable')}
                 </Text>
-              </TouchableOpacity>
+              )}
             </View>
           ) : (
             <View style={styles.adRemovedSection}>
@@ -482,6 +485,24 @@ const styles = StyleSheet.create({
   restoreButtonText: {
     color: '#5856D6',
     fontSize: 14,
+  },
+  restoreHintText: {
+    color: '#888',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 4,
+    paddingHorizontal: 20,
+  },
+  loadingContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  iapUnavailableText: {
+    color: '#888',
+    fontSize: 14,
+    textAlign: 'center',
+    padding: 20,
+    lineHeight: 20,
   },
   adRemovedSection: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
