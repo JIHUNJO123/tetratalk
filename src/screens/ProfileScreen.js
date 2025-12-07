@@ -15,7 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { purchaseRemoveAds, getProducts, isIAPAvailable } from '../services/iap';
 
 export default function ProfileScreen({ navigation }) {
-  const { user, userProfile, logout, deleteAccount, adsRemoved, handleRestorePurchases } = useAuth();
+  const { user, userProfile, logout, deleteAccount, adsRemoved, setAdsRemoved, handleRestorePurchases } = useAuth();
   const [isLoadingPurchase, setIsLoadingPurchase] = useState(false);
   const [productPrice, setProductPrice] = useState('');
   const [isPriceLoading, setIsPriceLoading] = useState(true);
@@ -137,6 +137,12 @@ export default function ProfileScreen({ navigation }) {
         zh: '成功',
         ja: '成功'
       },
+      purchaseSuccess: {
+        en: 'Ads have been removed!',
+        es: '¡Los anuncios han sido eliminados!',
+        zh: '广告已移除！',
+        ja: '広告が削除されました！'
+      },
       accountDeleted: {
         en: 'Account deleted successfully.',
         es: 'Cuenta eliminada exitosamente.',
@@ -203,19 +209,25 @@ export default function ProfileScreen({ navigation }) {
 
   const handlePurchaseRemoveAds = async () => {
     if (!isIAPAvailable()) {
-      // 조용히 실패 처리 - 에러 메시지 표시 안 함
       console.log('IAP not available on this device');
       return;
     }
 
     setIsLoadingPurchase(true);
     try {
-      console.log('Starting purchase...');
+      console.log('Starting RevenueCat purchase...');
 
-      // 구매 요청 (상품 정보는 내부에서 처리)
-      const result = await purchaseRemoveAds();
-      console.log('Purchase request result:', result);
-      // 결과는 AuthContext의 purchaseListener에서 처리됨
+      // RevenueCat 구매 요청 - 직접 결과 반환
+      const success = await purchaseRemoveAds();
+      
+      if (success) {
+        console.log('Purchase successful!');
+        // 상태 업데이트는 AuthContext에서 자동 처리됨
+        Alert.alert(
+          getTranslation('success') || 'Success',
+          getTranslation('purchaseSuccess') || 'Ads have been removed!'
+        );
+      }
     } catch (error) {
       console.error('Purchase error:', error);
       // 에러 발생해도 Alert 표시 안 함 - 조용히 처리

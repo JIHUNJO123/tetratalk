@@ -9,7 +9,7 @@ import {
 import { doc, setDoc, getDoc, collection, query, where, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
 import { registerForPushNotifications } from '../services/notifications';
-import { initializeIAP, disconnectIAP, setPurchaseListener, restorePurchases as restoreIAPPurchases, isIAPAvailable } from '../services/iap';
+import { initializeIAP, disconnectIAP, setPurchaseListener, restorePurchases as restoreIAPPurchases, isIAPAvailable, setRevenueCatUserId, checkPurchaseStatus } from '../services/iap';
 import { setGlobalAdsRemoved } from '../components/AdMobInterstitial';
 import * as Application from 'expo-application';
 // GoogleSignin import 제거
@@ -37,40 +37,33 @@ export const AuthProvider = ({ children }) => {
     setGlobalAdsRemoved(adsRemoved);
   }, [adsRemoved]);
 
-  // IAP 초기화 및 Purchase Listener 설정
+  // IAP 초기화 (RevenueCat)
   useEffect(() => {
-    let cleanupListener = null;
-
     const setupIAP = async () => {
       if (isIAPAvailable()) {
         await initializeIAP();
         
-        // 구매 리스너 설정
-        cleanupListener = setPurchaseListener(
-          // 구매 성공 시
-          () => {
-            console.log('Purchase successful - ads removed');
+        // 사용자 로그인 시 RevenueCat에 유저 ID 연동
+        if (user?.uid) {
+          await setRevenueCatUserId(user.uid);
+          
+          // RevenueCat에서 구매 상태 확인
+          const hasPurchase = await checkPurchaseStatus();
+          if (hasPurchase) {
             setAdsRemoved(true);
-            // Firebase에 저장
-            if (user?.uid) {
-              updateDoc(doc(db, 'users', user.uid), {
-                adsRemoved: true,
-                adsRemovedAt: new Date().toISOString(),
-              }).catch(console.error);
-            }
-          },
-          // 구매 에러 시
-          (errorCode) => {
-            console.error('Purchase error:', errorCode);
+            // Firebase에도 동기화
+            updateDoc(doc(db, 'users', user.uid), {
+              adsRemoved: true,
+              adsRemovedAt: new Date().toISOString(),
+            }).catch(console.error);
           }
-        );
+        }
       }
     };
 
     setupIAP();
 
     return () => {
-      if (cleanupListener) cleanupListener();
       if (isIAPAvailable()) disconnectIAP();
     };
   }, [user]);
@@ -375,6 +368,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     setUserProfile,
     adsRemoved,
+    setAdsRemoved,
     handleRestorePurchases,
   };
 

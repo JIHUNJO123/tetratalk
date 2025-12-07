@@ -1,63 +1,93 @@
-// 인앱결제 서비스 - 광고 제거 기능 (react-native-iap)
+// 인앱결제 서비스 - RevenueCat 사용
 import { Platform } from 'react-native';
-import * as RNIap from 'react-native-iap';
+import Purchases from 'react-native-purchases';
 
-// 상품 ID (App Store Connect에서 생성)
+// RevenueCat API Keys
+const REVENUECAT_API_KEY_IOS = 'appl_wAekkfzrZHgRLHbUPqNTPXsjYFD';
+const REVENUECAT_API_KEY_ANDROID = 'goog_wAekkfzrZHgRLHbUPqNTPXsjYFD'; // Android 키 추가 시 교체
+
+// 상품 ID
 export const PRODUCT_IDS = {
   REMOVE_ADS: 'com.tetratalk.app.removeads',
 };
 
-const productIds = [PRODUCT_IDS.REMOVE_ADS];
+// Entitlement ID (RevenueCat 대시보드에서 설정한 것)
+const ENTITLEMENT_ID = 'remove_ads';
 
-let isConnected = false;
+let isConfigured = false;
 
-// 인앱결제 초기화
+// RevenueCat 초기화
 export async function initializeIAP() {
   try {
-    if (isConnected) {
-      console.log('IAP already connected');
+    if (isConfigured) {
+      console.log('RevenueCat already configured');
       return true;
     }
-    
-    const result = await RNIap.initConnection();
-    console.log('IAP connection result:', result);
-    isConnected = true;
 
-    // iOS에서 pending transactions 정리
-    if (Platform.OS === 'ios') {
-      try {
-        await RNIap.clearTransactionIOS();
-      } catch (clearError) {
-        console.log('Clear transaction warning:', clearError);
-      }
+    if (!isIAPAvailable()) {
+      console.log('IAP not available on this platform');
+      return false;
     }
+
+    const apiKey = Platform.OS === 'ios' ? REVENUECAT_API_KEY_IOS : REVENUECAT_API_KEY_ANDROID;
+    
+    await Purchases.configure({ apiKey });
+    console.log('RevenueCat configured successfully');
+    isConfigured = true;
 
     return true;
   } catch (error) {
-    console.error('IAP connection failed:', error);
-    isConnected = false;
+    console.error('RevenueCat configuration failed:', error);
+    isConfigured = false;
     return false;
+  }
+}
+
+// 사용자 ID 설정 (Firebase UID 연동)
+export async function setRevenueCatUserId(userId) {
+  try {
+    if (!isConfigured) {
+      await initializeIAP();
+    }
+    
+    if (userId) {
+      await Purchases.logIn(userId);
+      console.log('RevenueCat user logged in:', userId);
+    }
+  } catch (error) {
+    console.error('RevenueCat login error:', error);
   }
 }
 
 // 상품 정보 가져오기
 export async function getProducts() {
   try {
-    // 연결 확인
-    if (!isConnected) {
+    if (!isConfigured) {
       await initializeIAP();
     }
-    
-    console.log('Fetching products with SKUs:', productIds);
-    const products = await RNIap.getProducts({ skus: productIds });
-    console.log('Products fetched:', JSON.stringify(products, null, 2));
-    console.log('Products count:', products?.length || 0);
 
-    return products || [];
+    const offerings = await Purchases.getOfferings();
+    console.log('Offerings:', JSON.stringify(offerings, null, 2));
+
+    if (offerings.current && offerings.current.availablePackages.length > 0) {
+      // 패키지를 상품 형태로 변환
+      const products = offerings.current.availablePackages.map(pkg => ({
+        productId: pkg.product.identifier,
+        localizedPrice: pkg.product.priceString,
+        price: pkg.product.price,
+        title: pkg.product.title,
+        description: pkg.product.description,
+        package: pkg, // 구매 시 필요
+      }));
+      
+      console.log('Products fetched:', products.length);
+      return products;
+    }
+
+    console.log('No offerings available');
+    return [];
   } catch (error) {
     console.error('Error fetching products:', error);
-    console.error('Error code:', error.code);
-    console.error('Error message:', error.message);
     return [];
   }
 }
@@ -65,112 +95,97 @@ export async function getProducts() {
 // 광고 제거 구매
 export async function purchaseRemoveAds() {
   try {
-    // 연결 확인
-    if (!isConnected) {
+    if (!isConfigured) {
       await initializeIAP();
     }
+
+    // 현재 offering에서 패키지 가져오기
+    const offerings = await Purchases.getOfferings();
     
-    console.log('Requesting purchase for:', PRODUCT_IDS.REMOVE_ADS);
-
-    // iOS와 Android에서 다른 파라미터 사용
-    if (Platform.OS === 'ios') {
-      await RNIap.requestPurchase({
-        sku: PRODUCT_IDS.REMOVE_ADS,
-        andDangerouslyFinishTransactionAutomaticallyIOS: false,
-      });
-    } else {
-      await RNIap.requestPurchase({
-        skus: [PRODUCT_IDS.REMOVE_ADS],
-      });
-    }
-
-    console.log('Purchase request sent');
-    return true;
-  } catch (error) {
-    console.error('Purchase failed:', error);
-    // 사용자 취소는 에러로 처리하지 않음
-    if (error.code === 'E_USER_CANCELLED') {
+    if (!offerings.current || offerings.current.availablePackages.length === 0) {
+      console.log('No packages available for purchase');
       return false;
     }
-    throw error;
-  }
-}
 
-// 구매 복원 (이전에 구매한 경우)
-export async function restorePurchases() {
-  try {
-    const purchases = await RNIap.getAvailablePurchases();
-    console.log('Available purchases:', purchases);
+    // 첫 번째 패키지 (Lifetime) 구매
+    const packageToPurchase = offerings.current.availablePackages[0];
+    console.log('Purchasing package:', packageToPurchase.identifier);
 
-    // 광고 제거 상품이 있는지 확인
-    const removeAdsPurchase = purchases?.find(
-      (purchase) => purchase.productId === PRODUCT_IDS.REMOVE_ADS
-    );
+    const { customerInfo } = await Purchases.purchasePackage(packageToPurchase);
+    console.log('Purchase successful:', customerInfo);
 
-    if (removeAdsPurchase) {
-      console.log('Remove ads purchase found');
+    // Entitlement 확인
+    if (customerInfo.entitlements.active[ENTITLEMENT_ID]) {
+      console.log('Remove ads entitlement active');
       return true;
     }
 
     return false;
   } catch (error) {
-    console.error('Error restoring purchases:', error);
-    return false;
+    console.error('Purchase failed:', error);
+    
+    // 사용자 취소
+    if (error.userCancelled) {
+      console.log('User cancelled purchase');
+      return false;
+    }
+    
+    throw error;
   }
 }
 
-// 구매 완료 처리 (트랜잭션 종료)
-export async function finishTransaction(purchase) {
+// 구매 복원
+export async function restorePurchases() {
   try {
-    await RNIap.finishTransaction({ purchase, isConsumable: false });
-    console.log('Transaction finished');
-    return true;
+    if (!isConfigured) {
+      await initializeIAP();
+    }
+
+    const customerInfo = await Purchases.restorePurchases();
+    console.log('Restore result:', customerInfo);
+
+    // Entitlement 확인
+    if (customerInfo.entitlements.active[ENTITLEMENT_ID]) {
+      console.log('Remove ads entitlement restored');
+      return true;
+    }
+
+    return false;
   } catch (error) {
-    console.error('Error finishing transaction:', error);
+    console.error('Restore failed:', error);
     return false;
   }
 }
 
-// 구매 업데이트 리스너 설정
+// 현재 구독/구매 상태 확인
+export async function checkPurchaseStatus() {
+  try {
+    if (!isConfigured) {
+      await initializeIAP();
+    }
+
+    const customerInfo = await Purchases.getCustomerInfo();
+    
+    // Entitlement 확인
+    const hasRemoveAds = !!customerInfo.entitlements.active[ENTITLEMENT_ID];
+    console.log('Has remove ads:', hasRemoveAds);
+    
+    return hasRemoveAds;
+  } catch (error) {
+    console.error('Error checking purchase status:', error);
+    return false;
+  }
+}
+
+// 구매 리스너 설정 (호환성 유지)
 export function setPurchaseListener(onPurchaseSuccess, onPurchaseError) {
-  // 구매 성공 리스너
-  const purchaseUpdateSubscription = RNIap.purchaseUpdatedListener(async (purchase) => {
-    console.log('Purchase updated:', purchase);
-
-    const receipt = purchase.transactionReceipt;
-    if (receipt) {
-      // 트랜잭션 완료 처리
-      await finishTransaction(purchase);
-
-      if (purchase.productId === PRODUCT_IDS.REMOVE_ADS) {
-        onPurchaseSuccess && onPurchaseSuccess();
-      }
-    }
-  });
-
-  // 구매 에러 리스너
-  const purchaseErrorSubscription = RNIap.purchaseErrorListener((error) => {
-    console.error('Purchase error:', error);
-    if (error.code !== 'E_USER_CANCELLED') {
-      onPurchaseError && onPurchaseError(error.code);
-    }
-  });
-
-  // cleanup 함수 반환
-  return () => {
-    purchaseUpdateSubscription.remove();
-    purchaseErrorSubscription.remove();
-  };
+  // RevenueCat은 purchasePackage가 직접 결과 반환하므로 리스너 불필요
+  return () => {};
 }
 
-// 연결 해제
+// 연결 해제 (호환성 유지)
 export async function disconnectIAP() {
-  try {
-    await RNIap.endConnection();
-    console.log('IAP disconnected');
-  } catch (error) {
-    console.error('Error disconnecting IAP:', error);
-  }
+  console.log('RevenueCat disconnect (no-op)');
 }
 
 // 앱 환경 체크
