@@ -52,8 +52,7 @@
           "iosAppId": "ca-app-pub-5837885590326347~5503619440",
           "delayAppMeasurementInit": false
         }
-      ],
-      "react-native-iap"
+      ]
     ]
   }
 }
