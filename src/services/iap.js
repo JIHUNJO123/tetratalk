@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 import Purchases from 'react-native-purchases';
 
 // RevenueCat API Keys
-const REVENUECAT_API_KEY_IOS = 'appl_wAekkfzrZHgRLHbUPqNTPXsjYFD';
+const REVENUECAT_API_KEY_IOS = 'appl_ItMxZlggOGKzpTCrdCmqzsCXmNV';
 const REVENUECAT_API_KEY_ANDROID = 'goog_wAekkfzrZHgRLHbUPqNTPXsjYFD'; // Android 키 추가 시 교체
 
 // 상품 ID
