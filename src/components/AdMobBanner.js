@@ -1,42 +1,30 @@
 import React from 'react';
 import { View, Platform } from 'react-native';
-import Constants from 'expo-constants';
 import { useAuth } from '../context/AuthContext';
 
 // 웹에서는 AdMob을 import하지 않음
-let BannerAd, BannerAdSize, TestIds;
+let BannerAd, BannerAdSize;
 if (Platform.OS !== 'web') {
   const admob = require('react-native-google-mobile-ads');
   BannerAd = admob.BannerAd;
   BannerAdSize = admob.BannerAdSize;
-  TestIds = admob.TestIds;
 }
-
-// Allow forcing AdMob test IDs from app.json extra.admobTestMode
-const resolvedTestFlag = Constants?.expoConfig?.extra?.admobTestMode;
-const useTestAds = typeof resolvedTestFlag === 'boolean' ? resolvedTestFlag : __DEV__;
 
 export default function AdMobBannerComponent({ screenType }) {
   const { adsRemoved } = useAuth();
-  
+
   // 광고 제거 구매한 사용자는 광고 숨김
   if (adsRemoved) {
     return null;
   }
-  
-  // 웹에서는 광고 대신 빈 공간 표시
+
+  // 웹에서는 광고 표시 안함
   if (Platform.OS === 'web') {
-    return <View style={{ height: 50 }} />;
+    return null;
   }
 
-  // 개발 중에는 테스트 광고 ID 사용, 프로덕션에서는 실제 ID 사용
+  // 프로덕션 광고 ID
   const getAdUnitID = () => {
-    // 개발 모드에서는 테스트 광고 사용
-    if (useTestAds) {
-      return TestIds.BANNER;
-    }
-    
-    // 프로덕션에서는 실제 광고 ID 사용
     if (Platform.OS === 'ios') {
       // 화면별 배너 광고
       if (screenType === 'chatList') {
