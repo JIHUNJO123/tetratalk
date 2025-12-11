@@ -1,0 +1,338 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support - TetraChat Global</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { 
+            color: #5f4dee; 
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        h2 { 
+            color: #4a3cb8; 
+            margin-top: 30px;
+            border-bottom: 2px solid #5f4dee;
+            padding-bottom: 10px;
+        }
+        .language-toggle {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .language-toggle button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: 2px solid #5f4dee;
+            background: white;
+            color: #5f4dee;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .language-toggle button:hover {
+            background: #ebe9fd;
+        }
+        .language-toggle button.active {
+            background: #5f4dee;
+            color: white;
+        }
+        .content { display: none; }
+        .content.active { display: block; }
+        .contact-box {
+            background: #f0efff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .contact-email {
+            color: #5f4dee;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .contact-email:hover {
+            text-decoration: underline;
+        }
+        .faq-item {
+            background: #fafafa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #5f4dee;
+        }
+        .faq-item h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .faq-item p {
+            margin: 0;
+            color: #666;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background: #5f4dee;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 10px 5px;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #4a3cb8;
+        }
+        .links {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .links a {
+            color: #5f4dee;
+            margin: 0 15px;
+            text-decoration: none;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="language-toggle">
+            <button onclick="showLanguage('en')" id="btn-en" class="active">English</button>
+            <button onclick="showLanguage('ja')" id="btn-ja">日本語</button>
+            <button onclick="showLanguage('es')" id="btn-es">Español</button>
+            <button onclick="showLanguage('zh')" id="btn-zh">中文</button>
+        </div>
+
+        <!-- ENGLISH -->
+        <div id="content-en" class="content active">
+            <h1>💬 TetraChat Global Support</h1>
+            <p class="subtitle">We're here to help!</p>
+
+            <div class="contact-box">
+                <p>📧 Contact us at:</p>
+                <a href="mailto:jihun.jo@yahoo.com" class="contact-email">jihun.jo@yahoo.com</a>
+                <p style="margin-top: 15px; color: #666;">We typically respond within 24-48 hours</p>
+            </div>
+
+            <h2>❓ Frequently Asked Questions</h2>
+            
+            <div class="faq-item">
+                <h3>How does translation work?</h3>
+                <p>Messages are automatically translated in real-time. Send messages in your language, and they'll be translated for the other person instantly.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>Which languages are supported?</h3>
+                <p>TetraChat Global supports 4 languages: English, Japanese, Spanish, and Chinese.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>How do I remove ads?</h3>
+                <p>Go to Settings (gear icon) and tap "Remove Ads". This is a one-time purchase that removes all ads permanently.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>How do I delete my account?</h3>
+                <p>Go to Settings and tap "Delete Account". All your data will be permanently deleted. You can also email us to request account deletion.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>I'm not receiving notifications</h3>
+                <p>Make sure notifications are enabled in your device settings for TetraChat Global. Also check that you're logged in.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>How do I report inappropriate content?</h3>
+                <p>Please email us at jihun.jo@yahoo.com with details about the issue and the username of the person involved.</p>
+            </div>
+
+            <div class="links">
+                <a href="privacy-policy.html">Privacy Policy</a>
+                <a href="account-deletion.html">Delete Account</a>
+            </div>
+        </div>
+
+        <!-- JAPANESE -->
+        <div id="content-ja" class="content">
+            <h1>💬 TetraChat Global サポート</h1>
+            <p class="subtitle">お困りですか？お手伝いします！</p>
+
+            <div class="contact-box">
+                <p>📧 お問い合わせ:</p>
+                <a href="mailto:jihun.jo@yahoo.com" class="contact-email">jihun.jo@yahoo.com</a>
+                <p style="margin-top: 15px; color: #666;">通常24〜48時間以内に返信いたします</p>
+            </div>
+
+            <h2>❓ よくある質問</h2>
+            
+            <div class="faq-item">
+                <h3>翻訳はどのように機能しますか？</h3>
+                <p>メッセージはリアルタイムで自動翻訳されます。あなたの言語でメッセージを送ると、相手には即座に翻訳されて届きます。</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>対応言語は？</h3>
+                <p>TetraChat Globalは4言語に対応：英語、日本語、スペイン語、中国語。</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>広告を削除するには？</h3>
+                <p>設定（歯車アイコン）から「広告を削除」をタップしてください。一度の購入で永久に広告が削除されます。</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>アカウントを削除するには？</h3>
+                <p>設定から「アカウント削除」をタップしてください。すべてのデータが完全に削除されます。メールでも削除リクエストを受け付けています。</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>通知が届きません</h3>
+                <p>デバイス設定でTetraChat Globalの通知が有効になっていることを確認してください。また、ログインしているかも確認してください。</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>不適切なコンテンツを報告するには？</h3>
+                <p>jihun.jo@yahoo.comまで、問題の詳細と関係するユーザー名をお知らせください。</p>
+            </div>
+
+            <div class="links">
+                <a href="privacy-policy.html">プライバシーポリシー</a>
+                <a href="account-deletion.html">アカウント削除</a>
+            </div>
+        </div>
+
+        <!-- SPANISH -->
+        <div id="content-es" class="content">
+            <h1>💬 Soporte de TetraChat Global</h1>
+            <p class="subtitle">¡Estamos aquí para ayudarte!</p>
+
+            <div class="contact-box">
+                <p>📧 Contáctanos:</p>
+                <a href="mailto:jihun.jo@yahoo.com" class="contact-email">jihun.jo@yahoo.com</a>
+                <p style="margin-top: 15px; color: #666;">Normalmente respondemos en 24-48 horas</p>
+            </div>
+
+            <h2>❓ Preguntas Frecuentes</h2>
+            
+            <div class="faq-item">
+                <h3>¿Cómo funciona la traducción?</h3>
+                <p>Los mensajes se traducen automáticamente en tiempo real. Envía mensajes en tu idioma y se traducirán instantáneamente para la otra persona.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>¿Qué idiomas están disponibles?</h3>
+                <p>TetraChat Global soporta 4 idiomas: inglés, japonés, español y chino.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>¿Cómo elimino los anuncios?</h3>
+                <p>Ve a Configuración (icono de engranaje) y toca "Eliminar Anuncios". Es una compra única que elimina los anuncios permanentemente.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>¿Cómo elimino mi cuenta?</h3>
+                <p>Ve a Configuración y toca "Eliminar Cuenta". Todos tus datos se eliminarán permanentemente. También puedes enviarnos un email para solicitar la eliminación.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>No recibo notificaciones</h3>
+                <p>Asegúrate de que las notificaciones estén habilitadas en la configuración de tu dispositivo para TetraChat Global. También verifica que hayas iniciado sesión.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>¿Cómo reporto contenido inapropiado?</h3>
+                <p>Envíanos un email a jihun.jo@yahoo.com con los detalles del problema y el nombre de usuario involucrado.</p>
+            </div>
+
+            <div class="links">
+                <a href="privacy-policy.html">Política de Privacidad</a>
+                <a href="account-deletion.html">Eliminar Cuenta</a>
+            </div>
+        </div>
+
+        <!-- CHINESE -->
+        <div id="content-zh" class="content">
+            <h1>💬 TetraChat Global 支持</h1>
+            <p class="subtitle">我们随时为您提供帮助！</p>
+
+            <div class="contact-box">
+                <p>📧 联系我们:</p>
+                <a href="mailto:jihun.jo@yahoo.com" class="contact-email">jihun.jo@yahoo.com</a>
+                <p style="margin-top: 15px; color: #666;">我们通常在24-48小时内回复</p>
+            </div>
+
+            <h2>❓ 常见问题</h2>
+            
+            <div class="faq-item">
+                <h3>翻译是如何工作的？</h3>
+                <p>消息会自动实时翻译。用您的语言发送消息，对方会立即收到翻译后的内容。</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>支持哪些语言？</h3>
+                <p>TetraChat Global 支持4种语言：英语、日语、西班牙语和中文。</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>如何移除广告？</h3>
+                <p>进入设置（齿轮图标）并点击"移除广告"。这是一次性购买，可永久移除所有广告。</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>如何删除我的账户？</h3>
+                <p>进入设置并点击"删除账户"。您的所有数据将被永久删除。您也可以通过电子邮件请求删除账户。</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>我没有收到通知</h3>
+                <p>请确保在设备设置中为 TetraChat Global 启用了通知。同时请检查您是否已登录。</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>如何举报不当内容？</h3>
+                <p>请发送电子邮件至 jihun.jo@yahoo.com，说明问题详情和相关用户名。</p>
+            </div>
+
+            <div class="links">
+                <a href="privacy-policy.html">隐私政策</a>
+                <a href="account-deletion.html">删除账户</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showLanguage(lang) {
+            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.language-toggle button').forEach(el => el.classList.remove('active'));
+            document.getElementById('content-' + lang).classList.add('active');
+            document.getElementById('btn-' + lang).classList.add('active');
+        }
+    </script>
+</body>
+</html>

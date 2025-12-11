@@ -1,0 +1,366 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Deletion - TetraChat Global</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 { color: #5f4dee; }
+        h2 { color: #4a3cb8; margin-top: 30px; }
+        .language-toggle {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .language-toggle button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: 2px solid #5f4dee;
+            background: white;
+            color: #5f4dee;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .language-toggle button.active {
+            background: #5f4dee;
+            color: white;
+        }
+        .content { display: none; }
+        .content.active { display: block; }
+        .steps {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .steps ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .steps li {
+            margin: 10px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .data-table th {
+            background: #5f4dee;
+            color: white;
+        }
+        .contact-email {
+            color: #5f4dee;
+            font-weight: bold;
+        }
+        .app-name {
+            font-weight: bold;
+            color: #5f4dee;
+        }
+    </style>
+</head>
+<body>
+    <div class="language-toggle">
+        <button onclick="showLanguage('en')" id="btn-en" class="active">English</button>
+        <button onclick="showLanguage('ja')" id="btn-ja">?�本�?/button>
+        <button onclick="showLanguage('es')" id="btn-es">Español</button>
+        <button onclick="showLanguage('zh')" id="btn-zh">�?��</button>
+    </div>
+
+    <!-- ENGLISH -->
+    <div id="content-en" class="content active">
+        <h1>?���?Account Deletion Request</h1>
+        <p>App Name: <span class="app-name">TetraChat Global</span></p>
+        <p>Developer: <span class="app-name">jihunjo</span></p>
+
+        <h2>How to Delete Your Account</h2>
+        <div class="steps">
+            <ol>
+                <li>Open the <strong>TetraChat Global</strong> app</li>
+                <li>Go to <strong>Settings</strong> (gear icon in top right)</li>
+                <li>Scroll down and tap <strong>"Delete Account"</strong></li>
+                <li>Confirm your decision in the popup</li>
+                <li>Your account will be permanently deleted</li>
+            </ol>
+        </div>
+
+        <h2>Alternative: Email Request</h2>
+        <p>If you cannot access the app, you can request account deletion by email:</p>
+        <p>?�� Email: <span class="contact-email">jihun.jo@yahoo.com</span></p>
+        <p>Please include your registered email address in the request. We will process your request within 7 business days.</p>
+
+        <h2>Data That Will Be Deleted</h2>
+        <table class="data-table">
+            <tr>
+                <th>Data Type</th>
+                <th>Action</th>
+                <th>Timing</th>
+            </tr>
+            <tr>
+                <td>Account Information (email, nickname)</td>
+                <td>Permanently Deleted</td>
+                <td>Immediately</td>
+            </tr>
+            <tr>
+                <td>Chat Messages</td>
+                <td>Permanently Deleted</td>
+                <td>Immediately</td>
+            </tr>
+            <tr>
+                <td>Chat Room Data</td>
+                <td>Permanently Deleted</td>
+                <td>Immediately</td>
+            </tr>
+            <tr>
+                <td>Profile Settings</td>
+                <td>Permanently Deleted</td>
+                <td>Immediately</td>
+            </tr>
+            <tr>
+                <td>Push Notification Tokens</td>
+                <td>Permanently Deleted</td>
+                <td>Immediately</td>
+            </tr>
+            <tr>
+                <td>Purchase Records</td>
+                <td>Retained by App Store/Play Store</td>
+                <td>Per store policy</td>
+            </tr>
+        </table>
+
+        <div class="warning">
+            ?�️ <strong>Warning:</strong> Account deletion is permanent and cannot be undone. All your messages, chat history, and profile data will be permanently deleted.
+        </div>
+    </div>
+
+    <!-- JAPANESE -->
+    <div id="content-ja" class="content">
+        <h1>?���??�カ?�ン?�削?�リ??��?�ト</h1>
+        <p>?�プ?�名: <span class="app-name">TetraChat Global</span></p>
+        <p>?�発?? <span class="app-name">jihunjo</span></p>
+
+        <h2>?�カ?�ン?�削?�方�?/h2>
+        <div class="steps">
+            <ol>
+                <li><strong>TetraChat Global</strong>?�プ?�を?�く</li>
+                <li><strong>�?��</strong>（右上の�?��?�イ?�ン）を?�ッ??/li>
+                <li>下に?�ク??��?�し??strong>?�ア?�ウ?�ト?�除??/strong>?�タ?�プ</li>
+                <li>?�ッ?�ア?�プ?�確�?/li>
+                <li>?�カ?�ン?�が完全?�削?�さ?�ま??/li>
+            </ol>
+        </div>
+
+        <h2>代替?�法：メ?�ル?�の?�ク?�ス??/h2>
+        <p>?�プ?�に?�ク?�ス?�き?�い?�合??��メ?�ル?�ア?�ウ?�ト?�除?�リ??��?�ト?�き?�す�?/p>
+        <p>?�� ?�ー?? <span class="contact-email">jihun.jo@yahoo.com</span></p>
+        <p>?�録?�れ?�い?�メ?�ル?�ド?�ス?�リ??��?�ト?�含?�て?�だ?�い???��??�以?�に??��?�ま?��?/p>
+
+        <h2>?�除?�れ?�デ?�タ</h2>
+        <table class="data-table">
+            <tr>
+                <th>?�ー?�タ?�プ</th>
+                <th>??��</th>
+                <th>?�イ?�ン??/th>
+            </tr>
+            <tr>
+                <td>?�カ?�ン?�情?�（?�ー?�、ニ?�ク?�ー?�）</td>
+                <td>完全?�除</td>
+                <td>?�時</td>
+            </tr>
+            <tr>
+                <td>?�ャ?�ト?�ッ?�ー??/td>
+                <td>完全?�除</td>
+                <td>?�時</td>
+            </tr>
+            <tr>
+                <td>?�ャ?�ト?�ー?�デ?�タ</td>
+                <td>完全?�除</td>
+                <td>?�時</td>
+            </tr>
+            <tr>
+                <td>?�ロ?�ィ?�ル�?��</td>
+                <td>完全?�除</td>
+                <td>?�時</td>
+            </tr>
+            <tr>
+                <td>?�ッ?�ュ?�知?�ー??��</td>
+                <td>完全?�除</td>
+                <td>?�時</td>
+            </tr>
+            <tr>
+                <td>購入記録</td>
+                <td>App Store/Play Store?�保??/td>
+                <td>?�ト?�ポ?�シ?�に従う</td>
+            </tr>
+        </table>
+
+        <div class="warning">
+            ?�️ <strong>�?��:</strong> ?�カ?�ン?�削?�は永久?�で?�り?�元?�戻?�こ?�は?�き?�せ?�。す?�て??��?�セ?�ジ?�チ?�ッ?�履歴、プ??��?�ー?�デ?�タ?�完?�に?�除?�れ?�す??
+        </div>
+    </div>
+
+    <!-- SPANISH -->
+    <div id="content-es" class="content">
+        <h1>?���?Solicitud de Eliminación de Cuenta</h1>
+        <p>Nombre de la App: <span class="app-name">TetraChat Global</span></p>
+        <p>Desarrollador: <span class="app-name">jihunjo</span></p>
+
+        <h2>Cómo Eliminar Tu Cuenta</h2>
+        <div class="steps">
+            <ol>
+                <li>Abre la aplicación <strong>TetraChat Global</strong></li>
+                <li>Ve a <strong>Configuración</strong> (icono de engranaje arriba a la derecha)</li>
+                <li>Desplázate hacia abajo y toca <strong>"Eliminar Cuenta"</strong></li>
+                <li>Confirma tu decisión en la ventana emergente</li>
+                <li>Tu cuenta será eliminada permanentemente</li>
+            </ol>
+        </div>
+
+        <h2>Alternativa: Solicitud por Email</h2>
+        <p>Si no puedes acceder a la aplicación, puedes solicitar la eliminación de tu cuenta por correo electrónico:</p>
+        <p>?�� Email: <span class="contact-email">jihun.jo@yahoo.com</span></p>
+        <p>Incluye tu dirección de correo electrónico registrada en la solicitud. Procesaremos tu solicitud en 7 días hábiles.</p>
+
+        <h2>Datos Que Serán Eliminados</h2>
+        <table class="data-table">
+            <tr>
+                <th>Tipo de Datos</th>
+                <th>Acción</th>
+                <th>Momento</th>
+            </tr>
+            <tr>
+                <td>Información de Cuenta (email, apodo)</td>
+                <td>Eliminado Permanentemente</td>
+                <td>Inmediatamente</td>
+            </tr>
+            <tr>
+                <td>Mensajes de Chat</td>
+                <td>Eliminado Permanentemente</td>
+                <td>Inmediatamente</td>
+            </tr>
+            <tr>
+                <td>Datos de Sala de Chat</td>
+                <td>Eliminado Permanentemente</td>
+                <td>Inmediatamente</td>
+            </tr>
+            <tr>
+                <td>Configuración de Perfil</td>
+                <td>Eliminado Permanentemente</td>
+                <td>Inmediatamente</td>
+            </tr>
+            <tr>
+                <td>Tokens de Notificación Push</td>
+                <td>Eliminado Permanentemente</td>
+                <td>Inmediatamente</td>
+            </tr>
+            <tr>
+                <td>Registros de Compra</td>
+                <td>Retenido por App Store/Play Store</td>
+                <td>Según política de la tienda</td>
+            </tr>
+        </table>
+
+        <div class="warning">
+            ?�️ <strong>Advertencia:</strong> La eliminación de la cuenta es permanente y no se puede deshacer. Todos tus mensajes, historial de chat y datos de perfil se eliminarán permanentemente.
+        </div>
+    </div>
+
+    <!-- CHINESE -->
+    <div id="content-zh" class="content">
+        <h1>?���?�?��?�除请求</h1>
+        <p>应用?�称: <span class="app-name">TetraChat Global</span></p>
+        <p>开?��? <span class="app-name">jihunjo</span></p>
+
+        <h2>如何?�除?�的�?��</h2>
+        <div class="steps">
+            <ol>
+                <li>?��? <strong>TetraChat Global</strong> 应用</li>
+                <li>进入 <strong>设置</strong>（右上角齿轮?�标�?/li>
+                <li>?�下滚动并点??<strong>"?�除�?��"</strong></li>
+                <li>?�弹?�窗?�中�???�的?�定</li>
+                <li>?�的�?��将被永久?�除</li>
+            </ol>
+        </div>
+
+        <h2>?�代?�式：电子邮件�?�?/h2>
+        <p>如果?�无法�???��?�，??��?�过?�子??��请求?�除�?���?/p>
+        <p>?�� ???: <span class="contact-email">jihun.jo@yahoo.com</span></p>
+        <p>请在请求�?��?�您?�注?�电子邮件地?�?�我们将??个工作日?�处?�您?��?求�?/p>
+
+        <h2>将被?�除?�数??/h2>
+        <table class="data-table">
+            <tr>
+                <th>?�据类型</th>
+                <th>?�作</th>
+                <th>?�间</th>
+            </tr>
+            <tr>
+                <td>�?��信息（邮箱、昵称）</td>
+                <td>永久?�除</td>
+                <td>立即</td>
+            </tr>
+            <tr>
+                <td>?�天消息</td>
+                <td>永久?�除</td>
+                <td>立即</td>
+            </tr>
+            <tr>
+                <td>?�天室数??/td>
+                <td>永久?�除</td>
+                <td>立即</td>
+            </tr>
+            <tr>
+                <td>个人资料设置</td>
+                <td>永久?�除</td>
+                <td>立即</td>
+            </tr>
+            <tr>
+                <td>?�送通知令牌</td>
+                <td>永久?�除</td>
+                <td>立即</td>
+            </tr>
+            <tr>
+                <td>�?��记录</td>
+                <td>?�App Store/Play Store保留</td>
+                <td>?�据?�店?�策</td>
+            </tr>
+        </table>
+
+        <div class="warning">
+            ?�️ <strong>�?��:</strong> �?��?�除??��久性的，无法撤?�?�您?��??�消??��聊天�?录和个人资料?�据将被永久?�除??
+        </div>
+    </div>
+
+    <script>
+        function showLanguage(lang) {
+            // Hide all content
+            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.language-toggle button').forEach(el => el.classList.remove('active'));
+            
+            // Show selected content
+            document.getElementById('content-' + lang).classList.add('active');
+            document.getElementById('btn-' + lang).classList.add('active');
+        }
+    </script>
+</body>
+</html>
