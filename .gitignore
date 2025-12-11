@@ -39,6 +39,11 @@ yarn-error.*
 .DS_Store
 *.pem
 
+# Keystore files (보안)
+*.jks
+*.keystore
+credentials.json
+
 # local env files
 .env*.local
 .env
