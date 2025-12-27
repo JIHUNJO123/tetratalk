@@ -3,8 +3,6 @@ workflows:
     name: iOS Release
     max_build_duration: 60
     instance_type: mac_mini_m2
-    integrations:
-      app_store_connect: TetraChat
     
     environment:
       node: 20
@@ -72,12 +70,6 @@ workflows:
     
     artifacts:
       - ios/build/*.ipa
-    
-    publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
-        submit_to_app_store: false
 
   android-workflow:
     name: Android Release
