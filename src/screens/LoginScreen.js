@@ -543,29 +543,27 @@ Contacto: jihun.jo@yahoo.com`,
             maxLength={10}
           />
 
-          {
-            <View style={styles.termsContainer}>
-              <Text style={styles.termsTitle}>
-                {getTranslation('termsTitle')}
+          <View style={styles.termsContainer}>
+            <Text style={styles.termsTitle}>
+              {getTranslation('termsTitle')}
+            </Text>
+            <ScrollView style={styles.termsScrollView} nestedScrollEnabled={true}>
+              <Text style={styles.termsContent}>
+                {getTranslation('termsContent')}
               </Text>
-              <ScrollView style={styles.termsScrollView} nestedScrollEnabled={true}>
-                <Text style={styles.termsContent}>
-                  {getTranslation('termsContent')}
-                </Text>
-              </ScrollView>
-              <TouchableOpacity
-                style={styles.termsCheckbox}
-                onPress={() => setTermsAccepted(!termsAccepted)}
-              >
-                <View style={[styles.checkbox, termsAccepted && styles.checkboxChecked]}>
-                  {termsAccepted && <Text style={styles.checkmark}>✓</Text>}
-                </View>
-                <Text style={styles.termsAgreeText}>
-                  {getTranslation('termsAgreeText')}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
+            </ScrollView>
+            <TouchableOpacity
+              style={styles.termsCheckbox}
+              onPress={() => setTermsAccepted(!termsAccepted)}
+            >
+              <View style={[styles.checkbox, termsAccepted && styles.checkboxChecked]}>
+                {termsAccepted && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+              <Text style={styles.termsAgreeText}>
+                {getTranslation('termsAgreeText')}
+              </Text>
+            </TouchableOpacity>
+          </View>
 
           <View style={styles.languageContainer}>
               <Text style={styles.languageLabel}>
