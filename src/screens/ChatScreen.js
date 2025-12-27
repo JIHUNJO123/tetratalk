@@ -322,14 +322,83 @@ export default function ChatScreen({ route, navigation }) {
       
       setInputText('');
 
+      // Bot response logic
+      if (otherUser?.isBot) {
+        // Add user message first
+        await addDoc(collection(db, 'chatRooms', chatRoomId, 'messages'), {
+          text: messageText,
+          senderId: user.uid,
+          senderName: userProfile?.displayName || 'You',
+          createdAt: Timestamp.now(),
+          translated: false,
+        });
+
+        // Bot auto-response after 1 second
+        setTimeout(async () => {
+          const botResponses = {
+            en: [
+              "That's interesting! Can you tell me more?",
+              "I see! How do you feel about that?",
+              "Thanks for sharing! What else would you like to practice?",
+              "Great! Let's continue practicing together.",
+            ],
+            es: [
+              "¡Eso es interesante! ¿Puedes contarme más?",
+              "¡Ya veo! ¿Cómo te sientes al respecto?",
+              "¡Gracias por compartir! ¿Qué más te gustaría practicar?",
+              "¡Genial! Sigamos practicando juntos.",
+            ],
+            zh: [
+              "很有趣！你能告诉我更多吗？",
+              "我明白了！你对此有什么感受？",
+              "谢谢分享！你还想练习什么？",
+              "太好了！让我们一起继续练习。",
+            ],
+            ja: [
+              "興味深いですね！もっと教えてください。",
+              "なるほど！それについてどう感じますか？",
+              "共有ありがとうございます！他に練習したいことはありますか？",
+              "素晴らしい！一緒に練習を続けましょう。",
+            ],
+          };
+
+          const responses = botResponses[otherUser.language] || botResponses.en;
+          const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+
+          await addDoc(collection(db, 'chatRooms', chatRoomId, 'messages'), {
+            text: randomResponse,
+            senderId: otherUser.id,
+            senderName: otherUser.displayName,
+            createdAt: Timestamp.now(),
+            translated: false,
+          });
+        }, 1000);
+        return;
+      }
+
       // 메시지 저장
       const messagesRef = collection(db, 'chatRooms', chatRoomId, 'messages');
       await addDoc(messagesRef, {
         text: messageText,
         senderId: user.uid,
         senderName: userProfile.displayName,
-        createdAt: new Date().toISOString(),
+        createdAt: Timestamp.now(),
       });
+
+      // 일일 미션 업데이트 (메시지 보내기)
+      try {
+        const { updateMissionProgress, MISSION_TYPES } = await import('../services/userEngagement');
+        await updateMissionProgress(user.uid, MISSION_TYPES.SEND_MESSAGES);
+        
+        // 사용자 통계 업데이트
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        const currentTotal = userDoc.data()?.totalMessages || 0;
+        await updateDoc(doc(db, 'users', user.uid), {
+          totalMessages: currentTotal + 1,
+        });
+      } catch (error) {
+        console.error('Error updating mission:', error);
+      }
 
       // 채팅방 정보 업데이트
       const chatRoomRef = doc(db, 'chatRooms', chatRoomId);

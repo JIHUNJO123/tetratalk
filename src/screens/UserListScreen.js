@@ -8,6 +8,9 @@ import {
   TextInput,
   Alert,
   Modal,
+  Share,
+  Platform,
+  Linking,
 } from 'react-native';
 import { 
   collection, 
@@ -18,6 +21,8 @@ import {
   serverTimestamp,
   deleteDoc,
   doc,
+  getDoc,
+  updateDoc,
   onSnapshot,
 } from 'firebase/firestore';
 import { db } from '../services/firebase';
@@ -101,6 +106,48 @@ export default function UserListScreen({ navigation }) {
         es: 'No hay usuarios disponibles',
         zh: '没有可用用户',
         ja: 'ユーザーがいません'
+      },
+      waitingRoom: {
+        en: 'Waiting Room',
+        es: 'Sala de Espera',
+        zh: '等候室',
+        ja: '待合室'
+      },
+      waitingRoomDescription: {
+        en: 'We\'re finding language partners for you. New users join every day!',
+        es: 'Estamos buscando compañeros de idioma para ti. ¡Nuevos usuarios se unen todos los días!',
+        zh: '我们正在为您寻找语言伙伴。每天都有新用户加入！',
+        ja: '言語パートナーを探しています。毎日新しいユーザーが参加しています！'
+      },
+      tryBotChat: {
+        en: 'Try Practice Chat',
+        es: 'Probar Chat de Práctica',
+        zh: '尝试练习聊天',
+        ja: '練習チャットを試す'
+      },
+      inviteFriends: {
+        en: 'Invite Friends',
+        es: 'Invitar Amigos',
+        zh: '邀请朋友',
+        ja: '友達を招待'
+      },
+      shareApp: {
+        en: 'Share App',
+        es: 'Compartir App',
+        zh: '分享应用',
+        ja: 'アプリを共有'
+      },
+      estimatedWait: {
+        en: 'Estimated wait time:',
+        es: 'Tiempo de espera estimado:',
+        zh: '预计等待时间：',
+        ja: '予想待ち時間：'
+      },
+      minutes: {
+        en: 'minutes',
+        es: 'minutos',
+        zh: '分钟',
+        ja: '分'
       },
       allLanguages: {
         en: 'All Languages',
@@ -204,7 +251,7 @@ export default function UserListScreen({ navigation }) {
     // 실시간 사용자 목록 업데이트
     const q = query(collection(db, 'users'));
     
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
+    const unsubscribe = onSnapshot(async (snapshot) => {
       const myLanguage = userProfile?.language || 'en';
       
       console.log('=== UserList Snapshot ===');
@@ -221,34 +268,51 @@ export default function UserListScreen({ navigation }) {
         ...doc.data() 
       }));
       
-      // 각 사용자의 deleted 상태 로그
-      allUsers.forEach(u => {
-        console.log(`User: ${u.displayName}, deleted: ${u.deleted}, type: ${typeof u.deleted}, language: ${u.language}`);
+      // 기본 필터링
+      const filteredUsers = allUsers.filter(u => {
+        return u.id !== user.uid && 
+               u.language !== myLanguage && 
+               !u.deleted && 
+               !blockedUserIds.includes(u.id);
       });
-      
-      const userList = allUsers
-        .filter(u => {
-          const shouldShow = u.id !== user.uid && 
-                            u.language !== myLanguage && 
-                            !u.deleted && 
-                            !blockedUserIds.includes(u.id); // 차단된 사용자 제외
-          
-          if (u.displayName === 'jojojo') {
-            console.log(`jojojo filter result: shouldShow=${shouldShow}, deleted=${u.deleted}`);
+
+      // 스마트 매칭 적용
+      try {
+        const { getSmartMatchedUsers } = await import('../services/smartMatching');
+        const smartMatched = await getSmartMatchedUsers(user.uid, userProfile, 50);
+        
+        // 스마트 매칭 결과와 기본 목록 병합 (중복 제거)
+        const userMap = new Map();
+        
+        // 스마트 매칭 결과를 먼저 추가 (높은 우선순위)
+        smartMatched.forEach(u => {
+          if (filteredUsers.find(fu => fu.id === u.id)) {
+            userMap.set(u.id, { ...u, isSmartMatched: true });
           }
-          
-          return shouldShow;
-        })
-        .sort((a, b) => {
-          // 최근 활동 순 정렬 (lastActiveAt이 최신인 사람이 위로)
+        });
+        
+        // 나머지 사용자 추가
+        filteredUsers.forEach(u => {
+          if (!userMap.has(u.id)) {
+            userMap.set(u.id, u);
+          }
+        });
+        
+        const userList = Array.from(userMap.values());
+        console.log('Smart matched users count:', userList.length);
+        setUsers(userList);
+        setFilteredUsers(userList);
+      } catch (error) {
+        console.error('Error applying smart matching:', error);
+        // 에러 시 기본 정렬 사용
+        const userList = filteredUsers.sort((a, b) => {
           const aTime = a.lastActiveAt?.toMillis ? a.lastActiveAt.toMillis() : (a.lastActiveAt || 0);
           const bTime = b.lastActiveAt?.toMillis ? b.lastActiveAt.toMillis() : (b.lastActiveAt || 0);
           return bTime - aTime;
         });
-
-      console.log('Filtered users count:', userList.length);
-      setUsers(userList);
-      setFilteredUsers(userList);
+        setUsers(userList);
+        setFilteredUsers(userList);
+      }
     }, (error) => {
       console.error('Error loading users:', error);
     });
@@ -293,6 +357,95 @@ export default function UserListScreen({ navigation }) {
   const handleCancelChat = () => {
     setShowConfirmModal(false);
     setSelectedUser(null);
+  };
+
+  const handleInviteFriends = async () => {
+    try {
+      const inviteCode = user?.uid?.substring(0, 8).toUpperCase() || 'TETRA';
+      const inviteMessage = language === 'en'
+        ? `Join me on TetraTalk! Practice languages with native speakers. Use my invite code: ${inviteCode}`
+        : language === 'es'
+        ? `¡Únete a mí en TetraTalk! Practica idiomas con hablantes nativos. Usa mi código de invitación: ${inviteCode}`
+        : language === 'zh'
+        ? `和我一起加入TetraTalk！与母语者练习语言。使用我的邀请码：${inviteCode}`
+        : `TetraTalkに参加しましょう！ネイティブスピーカーと言語を練習。招待コード: ${inviteCode}`;
+
+      if (Platform.OS === 'web') {
+        if (navigator.share) {
+          await navigator.share({
+            title: 'TetraTalk',
+            text: inviteMessage,
+            url: window.location.href,
+          });
+        } else {
+          await navigator.clipboard.writeText(inviteMessage);
+          Alert.alert(
+            getTranslation('inviteFriends'),
+            language === 'en' ? 'Invite link copied to clipboard!' : '招待リンクがクリップボードにコピーされました！'
+          );
+        }
+      } else {
+        const result = await Share.share({
+          message: inviteMessage,
+          title: 'TetraTalk',
+        });
+
+        if (result.action === Share.sharedAction) {
+          // Track invitation in Firestore
+          try {
+            await addDoc(collection(db, 'invitations'), {
+              inviterId: user.uid,
+              inviterName: userProfile?.displayName,
+              timestamp: serverTimestamp(),
+              platform: Platform.OS,
+            });
+          } catch (error) {
+            console.error('Error tracking invitation:', error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+      Alert.alert(
+        getTranslation('error'),
+        language === 'en' ? 'Failed to share. Please try again.' : '共有に失敗しました。もう一度お試しください。'
+      );
+    }
+  };
+
+  const handleShareApp = async () => {
+    try {
+      const shareMessage = language === 'en'
+        ? 'Check out TetraTalk - Practice languages with native speakers through real-time translation!'
+        : language === 'es'
+        ? '¡Mira TetraTalk - Practica idiomas con hablantes nativos a través de traducción en tiempo real!'
+        : language === 'zh'
+        ? '看看TetraTalk - 通过实时翻译与母语者练习语言！'
+        : 'TetraTalkをチェック - リアルタイム翻訳でネイティブスピーカーと言語を練習！';
+
+      if (Platform.OS === 'web') {
+        if (navigator.share) {
+          await navigator.share({
+            title: 'TetraTalk',
+            text: shareMessage,
+            url: window.location.href,
+          });
+        } else {
+          await navigator.clipboard.writeText(shareMessage);
+          Alert.alert(
+            getTranslation('shareApp'),
+            language === 'en' ? 'Share link copied to clipboard!' : '共有リンクがクリップボードにコピーされました！'
+          );
+        }
+      } else {
+        await Share.share({
+          message: shareMessage,
+          title: 'TetraTalk',
+        });
+      }
+    } catch (error) {
+      console.error('Error sharing app:', error);
+    }
   };
 
   const createChatRoom = async (otherUser) => {
@@ -400,6 +553,21 @@ export default function UserListScreen({ navigation }) {
               lastMessage: '',
             });
 
+            // 일일 미션 업데이트 (채팅 시작하기)
+            try {
+              const { updateMissionProgress, MISSION_TYPES } = await import('../services/userEngagement');
+              await updateMissionProgress(user.uid, MISSION_TYPES.START_CHATS);
+              
+              // 사용자 통계 업데이트
+              const userDoc = await getDoc(doc(db, 'users', user.uid));
+              const currentTotal = userDoc.data()?.totalChats || 0;
+              await updateDoc(doc(db, 'users', user.uid), {
+                totalChats: currentTotal + 1,
+              });
+            } catch (error) {
+              console.error('Error updating mission:', error);
+            }
+
             if (typeof window !== 'undefined' && window.alert) {
               window.alert(`✅ ${getTranslation('requestSent')}\n\n${getTranslation('requestSentMessage')}`);
             }
@@ -433,6 +601,21 @@ export default function UserListScreen({ navigation }) {
           lastMessageAt: serverTimestamp(),
           lastMessage: '',
         });
+
+        // 일일 미션 업데이트 (채팅 시작하기)
+        try {
+          const { updateMissionProgress, MISSION_TYPES } = await import('../services/userEngagement');
+          await updateMissionProgress(user.uid, MISSION_TYPES.START_CHATS);
+          
+          // 사용자 통계 업데이트
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          const currentTotal = userDoc.data()?.totalChats || 0;
+          await updateDoc(doc(db, 'users', user.uid), {
+            totalChats: currentTotal + 1,
+          });
+        } catch (error) {
+          console.error('Error updating mission:', error);
+        }
 
         if (typeof window !== 'undefined' && window.alert) {
           window.alert(getTranslation('chatRequestSent'));
@@ -569,10 +752,64 @@ export default function UserListScreen({ navigation }) {
         </View>
       )}
 
-      {filteredUsers.length === 0 ? (
+      {filteredUsers.length === 0 && !searchText ? (
+        <View style={styles.waitingRoomContainer}>
+          <Text style={styles.waitingRoomIcon}>⏳</Text>
+          <Text style={styles.waitingRoomTitle}>
+            {getTranslation('waitingRoom')}
+          </Text>
+          <Text style={styles.waitingRoomDescription}>
+            {getTranslation('waitingRoomDescription')}
+          </Text>
+          
+          <View style={styles.waitingRoomStats}>
+            <Text style={styles.waitingRoomStatsText}>
+              {getTranslation('estimatedWait')} {Math.max(5, Math.floor(users.length / 2))} {getTranslation('minutes')}
+            </Text>
+          </View>
+
+          <View style={styles.waitingRoomActions}>
+            <TouchableOpacity
+              style={styles.waitingRoomButton}
+              onPress={() => {
+                // Create bot chat
+                const botUser = {
+                  id: 'bot-practice',
+                  displayName: language === 'en' ? 'Practice Bot' : language === 'es' ? 'Bot de Práctica' : language === 'zh' ? '练习机器人' : '練習ボット',
+                  language: userProfile?.language === 'en' ? 'es' : 'en',
+                  isBot: true,
+                };
+                createChatRoom(botUser);
+              }}
+            >
+              <Text style={styles.waitingRoomButtonText}>
+                {getTranslation('tryBotChat')}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.waitingRoomButton, styles.inviteButton]}
+              onPress={handleInviteFriends}
+            >
+              <Text style={styles.waitingRoomButtonText}>
+                {getTranslation('inviteFriends')}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.waitingRoomButton, styles.shareButton]}
+              onPress={handleShareApp}
+            >
+              <Text style={styles.waitingRoomButtonText}>
+                {getTranslation('shareApp')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      ) : filteredUsers.length === 0 && searchText ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>
-            {searchText ? getTranslation('noSearchResults') : getTranslation('noUsersAvailable')}
+            {getTranslation('noSearchResults')}
           </Text>
         </View>
       ) : (
@@ -721,6 +958,64 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: '#999',
+  },
+  waitingRoomContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 30,
+    backgroundColor: '#fff',
+  },
+  waitingRoomIcon: {
+    fontSize: 80,
+    marginBottom: 20,
+  },
+  waitingRoomTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  waitingRoomDescription: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 30,
+    lineHeight: 24,
+  },
+  waitingRoomStats: {
+    backgroundColor: '#f5f5f5',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 30,
+  },
+  waitingRoomStatsText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+  },
+  waitingRoomActions: {
+    width: '100%',
+    gap: 15,
+  },
+  waitingRoomButton: {
+    backgroundColor: '#007AFF',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  inviteButton: {
+    backgroundColor: '#34C759',
+  },
+  shareButton: {
+    backgroundColor: '#FF9500',
+  },
+  waitingRoomButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   languageFilterContainer: {
     flexDirection: 'row',

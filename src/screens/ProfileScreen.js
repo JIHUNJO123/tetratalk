@@ -308,6 +308,58 @@ export default function ProfileScreen({ navigation }) {
 
           <View style={styles.divider} />
 
+          {/* 프로필 편집 */}
+          <TouchableOpacity
+            style={styles.missionButton}
+            onPress={() => navigation.navigate('EditProfile')}
+          >
+            <Text style={styles.missionButtonText}>
+              ✏️ {language === 'en' ? 'Edit Profile' : language === 'es' ? 'Editar Perfil' : language === 'zh' ? '编辑资料' : 'プロフィール編集'}
+            </Text>
+            <Text style={styles.missionButtonArrow}>→</Text>
+          </TouchableOpacity>
+
+          <View style={styles.divider} />
+
+          {/* 미션 섹션 */}
+          <TouchableOpacity
+            style={styles.missionButton}
+            onPress={() => navigation.navigate('Missions')}
+          >
+            <Text style={styles.missionButtonText}>
+              🎯 {language === 'en' ? 'Daily Missions' : language === 'es' ? 'Misiones Diarias' : language === 'zh' ? '每日任务' : 'デイリーミッション'}
+            </Text>
+            <Text style={styles.missionButtonArrow}>→</Text>
+          </TouchableOpacity>
+
+          <View style={styles.divider} />
+
+          {/* 리더보드 */}
+          <TouchableOpacity
+            style={styles.missionButton}
+            onPress={() => navigation.navigate('Leaderboard')}
+          >
+            <Text style={styles.missionButtonText}>
+              🏆 {language === 'en' ? 'Leaderboard' : language === 'es' ? 'Clasificación' : language === 'zh' ? '排行榜' : 'リーダーボード'}
+            </Text>
+            <Text style={styles.missionButtonArrow}>→</Text>
+          </TouchableOpacity>
+
+          <View style={styles.divider} />
+
+          {/* 그룹 채팅 */}
+          <TouchableOpacity
+            style={styles.missionButton}
+            onPress={() => navigation.navigate('GroupChatList')}
+          >
+            <Text style={styles.missionButtonText}>
+              💬 {language === 'en' ? 'Group Chats' : language === 'es' ? 'Chats Grupales' : language === 'zh' ? '群组聊天' : 'グループチャット'}
+            </Text>
+            <Text style={styles.missionButtonArrow}>→</Text>
+          </TouchableOpacity>
+
+          <View style={styles.divider} />
+
           {/* 광고 제거 섹션 */}
           {!adsRemoved ? (
             <View style={styles.adSection}>
@@ -526,6 +578,24 @@ const styles = StyleSheet.create({
   adRemovedText: {
     fontSize: 16,
     fontWeight: '600',
+    color: '#5856D6',
+  },
+  missionButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  missionButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  missionButtonArrow: {
+    fontSize: 18,
     color: '#5856D6',
   },
 });

@@ -3,8 +3,7 @@ import { Platform } from 'react-native';
 import {
   signOut,
   onAuthStateChanged,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword
+  signInAnonymously
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, collection, query, where, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
@@ -135,6 +134,15 @@ export const AuthProvider = ({ children }) => {
           }
           
           setUserProfile(profileData);
+          
+          // 로그인 스트릭 업데이트
+          try {
+            const { updateLoginStreak } = await import('../services/userEngagement');
+            await updateLoginStreak(firebaseUser.uid);
+          } catch (error) {
+            console.error('Error updating login streak:', error);
+          }
+          
           // 광고 제거 상태 체크
           if (profileData.adsRemoved) {
             setAdsRemoved(true);
@@ -190,11 +198,11 @@ export const AuthProvider = ({ children }) => {
     return unsubscribe;
   }, []);
 
-  // Firebase Auth를 사용하는 회원가입 함수
-  const signup = async (email, password, displayName, language) => {
+  // 닉네임만으로 로그인 (익명 인증 사용)
+  const login = async (displayName, language) => {
     try {
       setLoading(true);
-      console.log('Starting signup process for email:', email);
+      console.log('Starting login with nickname:', displayName);
 
       // 닉네임 중복 체크
       const displayNameQuery = query(collection(db, 'users'), where('displayName', '==', displayName));
@@ -204,11 +212,11 @@ export const AuthProvider = ({ children }) => {
         throw new Error(language === 'en' ? 'This nickname is already in use.' : 'このニックネームはすでに使用されています。');
       }
 
-      // Firebase Auth로 사용자 생성 (이메일 직접 사용)
-      console.log('Creating Firebase Auth user with email:', email);
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // Firebase Anonymous Authentication으로 로그인
+      console.log('Signing in anonymously...');
+      const userCredential = await signInAnonymously(auth);
       const firebaseUser = userCredential.user;
-      console.log('Firebase Auth user created:', firebaseUser.uid);
+      console.log('Anonymous login successful:', firebaseUser.uid);
 
       // 디바이스 ID 생성
       let deviceId;
@@ -225,23 +233,22 @@ export const AuthProvider = ({ children }) => {
       // Firestore에 사용자 프로필 저장
       await setDoc(doc(db, 'users', firebaseUser.uid), {
         uid: firebaseUser.uid,
-        email,
         displayName,
         language,
         deviceId,
         createdAt: new Date().toISOString(),
-        provider: 'email',
+        lastActiveAt: new Date().toISOString(),
+        provider: 'anonymous',
         deleted: false
       });
 
       // 프로필 설정
       const profileData = {
         uid: firebaseUser.uid,
-        email,
         displayName,
         language,
         deviceId,
-        provider: 'email'
+        provider: 'anonymous'
       };
 
       setUserProfile(profileData);
@@ -249,46 +256,6 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
 
       return profileData;
-    } catch (error) {
-      console.error('Signup error:', error);
-      console.error('Error code:', error.code);
-      console.error('Error message:', error.message);
-      setLoading(false);
-      throw error;
-    }
-  };
-
-  // Firebase Auth를 사용하는 로그인 함수
-  const login = async (email, password, selectedLanguage = 'en') => {
-    try {
-      setLoading(true);
-      console.log('Starting login process for email:', email);
-
-      // Firebase Auth로 로그인 시도 (이메일 직접 사용)
-      console.log('Attempting Firebase Auth login with email:', email);
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const firebaseUser = userCredential.user;
-      console.log('Firebase Auth login successful:', firebaseUser.uid);
-
-      // Firestore에서 최신 프로필 데이터 가져오기
-      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-      if (userDoc.exists()) {
-        const profileData = userDoc.data();
-        
-        // 탈퇴한 사용자 체크
-        if (profileData.deleted) {
-          console.log('User is deleted:', email);
-          await signOut(auth);
-          throw new Error('This account has been deleted.');
-        }
-        
-        setUserProfile(profileData);
-        setUser(firebaseUser);
-        setLoading(false);
-        return profileData;
-      } else {
-        throw new Error('User profile not found.');
-      }
     } catch (error) {
       console.error('Login error:', error);
       console.error('Error code:', error.code);
@@ -361,7 +328,6 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     userProfile,
-    signup,
     login,
     logout,
     deleteAccount,

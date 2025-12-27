@@ -19,22 +19,14 @@ import { useAuth } from '../context/AuthContext';
 import { showInterstitial } from '../components/AdMobInterstitial';
 
 export default function LoginScreen({ navigation }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordConfirm, setPasswordConfirm] = useState('');
-  const [isLogin, setIsLogin] = useState(true);
   const [displayName, setDisplayName] = useState('');
   const [language, setLanguage] = useState('en');
-  const [autoCompleteDisabled, setAutoCompleteDisabled] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   
-  console.log('LoginScreen - isLogin:', isLogin, 'termsAccepted:', termsAccepted);
-  // Google Sign-In 관련 상태 제거
-  
-  const { login, signup } = useAuth();
+  const { login } = useAuth();
 
-  // 입력 규칙 검증 함수 - 4개 언어 지원
+  // 입력 규칙 검증 함수 - 닉네임만 체크
   const getValidationError = (lang) => {
     const messages = {
       nicknameRequired: {
@@ -54,85 +46,20 @@ export default function LoginScreen({ navigation }) {
         es: 'El apodo solo puede contener letras o números.',
         zh: '昵称只能包含字母或数字。',
         ja: 'ニックネームは文字と数字のみ使用可能です。'
-      },
-      usernameRequired: {
-        en: 'Please enter your email address.',
-        es: 'Por favor ingrese su correo electrónico.',
-        zh: '请输入您的电子邮件地址。',
-        ja: 'メールアドレスを入力してください。'
-      },
-      usernameInvalid: {
-        en: 'Please enter a valid email address.',
-        es: 'Por favor ingrese un correo electrónico válido.',
-        zh: '请输入有效的电子邮件地址。',
-        ja: '有効なメールアドレスを入力してください。'
-      },
-      passwordRequired: {
-        en: 'Please enter your password.',
-        es: 'Por favor ingrese su contraseña.',
-        zh: '请输入您的密码。',
-        ja: 'パスワードを入力してください。'
-      },
-      passwordLength: {
-        en: 'Password must be 6-20 characters.',
-        es: 'La contraseña debe tener 6-20 caracteres.',
-        zh: '密码必须是6-20个字符。',
-        ja: 'パスワードは6～20文字です。'
-      },
-      passwordWeak: {
-        en: 'Password must contain both letters and numbers.',
-        es: 'La contraseña debe contener letras y números.',
-        zh: '密码必须包含字母和数字。',
-        ja: 'パスワードは英文と数字を両方含む必要があります。'
-      },
-      passwordMismatch: {
-        en: 'Passwords do not match.',
-        es: 'Las contraseñas no coinciden.',
-        zh: '密码不匹配。',
-        ja: 'パスワードが一致しません。'
       }
     };
 
-    // 닉네임 규칙: 2-10자 (회원가입 시)
-    if (!isLogin) {
-      if (!displayName) {
-        return messages.nicknameRequired[lang] || messages.nicknameRequired.en;
-      }
-      if (displayName.length < 2 || displayName.length > 10) {
-        return messages.nicknameLength[lang] || messages.nicknameLength.en;
-      }
-      // 문자와 숫자만 허용 (모든 언어의 문자 포함)
-      const nicknameRegex = /^[\p{L}\p{N}]+$/u;
-      if (!nicknameRegex.test(displayName)) {
-        return messages.nicknameInvalid[lang] || messages.nicknameInvalid.en;
-      }
+    // 닉네임 규칙: 2-10자
+    if (!displayName) {
+      return messages.nicknameRequired[lang] || messages.nicknameRequired.en;
     }
-
-    // 이메일 규칙: 유효한 이메일 형식
-    if (!email) {
-      return messages.usernameRequired[lang] || messages.usernameRequired.en;
+    if (displayName.length < 2 || displayName.length > 10) {
+      return messages.nicknameLength[lang] || messages.nicknameLength.en;
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return messages.usernameInvalid[lang] || messages.usernameInvalid.en;
-    }
-
-    // 비밀번호 규칙: 6-20자, 영문+숫자 조합
-    if (!password) {
-      return messages.passwordRequired[lang] || messages.passwordRequired.en;
-    }
-    if (password.length < 6 || password.length > 20) {
-      return messages.passwordLength[lang] || messages.passwordLength.en;
-    }
-    // 영문과 숫자 모두 포함
-    const hasLetter = /[a-zA-Z]/.test(password);
-    const hasNumber = /[0-9]/.test(password);
-    if (!hasLetter || !hasNumber) {
-      return messages.passwordWeak[lang] || messages.passwordWeak.en;
-    }
-    // 비밀번호 확인
-    if (!isLogin && password !== passwordConfirm) {
-      return messages.passwordMismatch[lang] || messages.passwordMismatch.en;
+    // 문자와 숫자만 허용 (모든 언어의 문자 포함)
+    const nicknameRegex = /^[\p{L}\p{N}]+$/u;
+    if (!nicknameRegex.test(displayName)) {
+      return messages.nicknameInvalid[lang] || messages.nicknameInvalid.en;
     }
 
     return null; // 검증 통과
@@ -158,88 +85,37 @@ export default function LoginScreen({ navigation }) {
       return;
     }
 
+    // 이용약관 동의 확인
+    if (!termsAccepted) {
+      const errorMessages = {
+        en: 'Please agree to the Terms of Service to continue.',
+        es: 'Por favor acepte los Términos de Servicio para continuar.',
+        zh: '请同意服务条款以继续。',
+        ja: '利用規約に同意してください。'
+      };
+      const errorTitles = {
+        en: 'Terms Required',
+        es: 'Términos Requeridos',
+        zh: '需要条款',
+        ja: '利用規約必須'
+      };
+      const errorMsg = errorMessages[language] || errorMessages.en;
+      const errorTitle = errorTitles[language] || errorTitles.en;
+      if (typeof window !== 'undefined' && window.alert) {
+        window.alert(`⚠️ ${errorTitle}\n\n${errorMsg}`);
+      } else {
+        Alert.alert(`⚠️ ${errorTitle}`, errorMsg);
+      }
+      return;
+    }
+
     setIsProcessing(true); // 처리 시작
     
     try {
-      if (isLogin) {
-        // 이메일과 비밀번호로 로그인 (선택한 언어 전달)
-        await login(email, password, language);
-        await showInterstitial(); // 로그인 성공 시 전면 광고 노출
-      } else {
-        // Google 회원가입 로직 제거
-        {
-          // 이용약관 동의 확인
-          if (!termsAccepted) {
-            const errorMessages = {
-              en: 'Please agree to the Terms of Service to continue.',
-              es: 'Por favor acepte los Términos de Servicio para continuar.',
-              zh: '请同意服务条款以继续。',
-              ja: '利用規約に同意してください。'
-            };
-            const errorTitles = {
-              en: 'Terms Required',
-              es: 'Términos Requeridos',
-              zh: '需要条款',
-              ja: '利用規約必須'
-            };
-            const errorMsg = errorMessages[language] || errorMessages.en;
-            const errorTitle = errorTitles[language] || errorTitles.en;
-            if (typeof window !== 'undefined' && window.alert) {
-              window.alert(`⚠️ ${errorTitle}\n\n${errorMsg}`);
-            } else {
-              Alert.alert(`⚠️ ${errorTitle}`, errorMsg);
-            }
-            setIsProcessing(false); // 중요: return 전에 처리 상태 리셋
-            return;
-          }
-          
-          // 아이디 회원가입 - 한 번 더 검증
-          const signupValidationError = getValidationError(language);
-          if (signupValidationError) {
-            const errorTitle = {
-              en: 'Input Error',
-              es: 'Error de Entrada',
-              zh: '输入错误',
-              ja: '入力エラー'
-            };
-            if (typeof window !== 'undefined' && window.alert) {
-              window.alert(`⚠️ ${errorTitle[language] || errorTitle.en}\n\n${signupValidationError}`);
-            } else {
-              Alert.alert(`⚠️ ${errorTitle[language] || errorTitle.en}`, signupValidationError);
-            }
-            setIsProcessing(false); // 중요: return 전에 처리 상태 리셋
-            return;
-          }
-          
-          console.log('Calling signup with:', { email, displayName, language });
-          const result = await signup(email, password, displayName, language);
-          console.log('Signup result:', result);
-          
-          await showInterstitial(); // 회원가입 성공 시 전면 광고 노출
-          
-          // 회원가입 성공 시 안내
-          const successTitles = {
-            en: 'Registration Complete',
-            es: 'Registro Completo',
-            zh: '注册完成',
-            ja: '会員登録完了'
-          };
-          const successMessages = {
-            en: 'Your registration is complete!',
-            es: '¡Su registro está completo!',
-            zh: '您的注册已完成！',
-            ja: '登録が完了しました！'
-          };
-          if (typeof window !== 'undefined' && window.alert) {
-            window.alert(`✅ ${successTitles[language] || successTitles.en}\n\n${successMessages[language] || successMessages.en}`);
-          } else {
-            Alert.alert(`✅ ${successTitles[language] || successTitles.en}`, successMessages[language] || successMessages.en);
-          }
-          // 회원가입 성공하면 자동으로 로그인되므로 화면 전환 불필요
-          setIsProcessing(false);
-          return;
-        }
-      }
+      // 닉네임만으로 로그인 (익명 인증)
+      console.log('Calling login with:', { displayName, language });
+      await login(displayName, language);
+      await showInterstitial(); // 로그인 성공 시 전면 광고 노출
     } catch (error) {
       const errorMessages = {
         defaultError: {
@@ -360,29 +236,19 @@ export default function LoginScreen({ navigation }) {
         isLogin: isLogin
       });
 
-      const failedTitles = {
-        login: {
-          en: 'Login Failed',
-          es: 'Error al Iniciar Sesión',
-          zh: '登录失败',
-          ja: 'ログイン失敗'
-        },
-        signup: {
-          en: 'Registration Failed',
-          es: 'Error al Registrarse',
-          zh: '注册失败',
-          ja: '会員登録失敗'
-        }
+      const title = {
+        en: 'Login Failed',
+        es: 'Error al Iniciar Sesión',
+        zh: '登录失败',
+        ja: 'ログイン失敗'
       };
       
-      const title = isLogin 
-        ? (failedTitles.login[language] || failedTitles.login.en)
-        : (failedTitles.signup[language] || failedTitles.signup.en);
+      const failedTitle = title[language] || title.en;
 
       if (typeof window !== 'undefined' && window.alert) {
-        window.alert(`❌ ${title}\n\n${errorMessage}`);
+        window.alert(`❌ ${failedTitle}\n\n${errorMessage}`);
       } else {
-        Alert.alert(`❌ ${title}`, errorMessage);
+        Alert.alert(`❌ ${failedTitle}`, errorMessage);
       }
     } finally {
       setIsProcessing(false); // 처리 완료 (성공/실패 모두)
@@ -416,24 +282,6 @@ export default function LoginScreen({ navigation }) {
         zh: '昵称 (2-10个字符)',
         ja: 'ニックネーム (2～10文字)'
       },
-      idPlaceholder: {
-        en: 'Email Address',
-        es: 'Correo Electrónico',
-        zh: '电子邮件地址',
-        ja: 'メールアドレス'
-      },
-      passwordPlaceholder: {
-        en: 'Password (6-20 chars, letters+numbers)',
-        es: 'Contraseña (6-20 caracteres, letras+números)',
-        zh: '密码 (6-20个字符，字母+数字)',
-        ja: 'パスワード (6～20文字, 英数字)'
-      },
-      confirmPasswordPlaceholder: {
-        en: 'Confirm Password',
-        es: 'Confirmar Contraseña',
-        zh: '确认密码',
-        ja: 'パスワード確認'
-      },
       selectLanguageLabel: {
         en: 'Select Language:',
         es: 'Seleccionar Idioma:',
@@ -452,18 +300,6 @@ export default function LoginScreen({ navigation }) {
         zh: '注册',
         ja: '会員登録'
       },
-      switchToSignup: {
-        en: 'Don\'t have an account? Sign Up',
-        es: '¿No tienes cuenta? Regístrate',
-        zh: '没有账户？注册',
-        ja: 'アカウントをお持ちでないですか？会員登録'
-      },
-      switchToLogin: {
-        en: 'Already have an account? Login',
-        es: '¿Ya tienes cuenta? Inicia sesión',
-        zh: '已有账户？登录',
-        ja: 'すでにアカウントをお持ちですか？ログイン'
-      },
       rulesTitle: {
         en: '📝 Registration Rules',
         es: '📝 Reglas de Registro',
@@ -476,29 +312,11 @@ export default function LoginScreen({ navigation }) {
         zh: '• 昵称：2-10个字符',
         ja: '• ニックネーム: 2～10文字'
       },
-      idRule: {
-        en: '• Email: Valid email address required',
-        es: '• Correo: Se requiere correo electrónico válido',
-        zh: '• 电子邮件：需要有效的电子邮件地址',
-        ja: '• メール: 有効なメールアドレスが必要'
-      },
-      passwordRule: {
-        en: '• Password: 6-20 characters (letters+numbers required)',
-        es: '• Contraseña: 6-20 caracteres (letras+números requeridos)',
-        zh: '• 密码：6-20个字符（需要字母+数字）',
-        ja: '• パスワード: 6～20文字 (英文+数字必須)'
-      },
       specialCharsRule: {
         en: '• Special characters not allowed in nickname',
         es: '• No se permiten caracteres especiales en apodo',
         zh: '• 昵称中不允许特殊字符',
         ja: '• 特殊文字はニックネームに使用不可'
-      },
-      dividerText: {
-        en: 'OR',
-        es: 'O',
-        zh: '或',
-        ja: 'または'
       },
       termsTitle: {
         en: 'TERMS OF SERVICE',
@@ -652,18 +470,11 @@ Contacto: jihun.jo@yahoo.com`,
   const subtitle = getTranslation('subtitle');
   const description = getTranslation('description');
   const nicknamePlaceholder = getTranslation('nicknamePlaceholder');
-  const idPlaceholder = getTranslation('idPlaceholder');
-  const passwordPlaceholder = getTranslation('passwordPlaceholder');
-  const confirmPasswordPlaceholder = getTranslation('confirmPasswordPlaceholder');
   const selectLanguageLabel = getTranslation('selectLanguageLabel');
-  const loginButtonText = isLogin ? getTranslation('loginButton') : getTranslation('signupButton');
-  const switchButtonText = isLogin ? getTranslation('switchToSignup') : getTranslation('switchToLogin');
+  const loginButtonText = getTranslation('loginButton');
   const rulesTitle = getTranslation('rulesTitle');
   const nicknameRule = getTranslation('nicknameRule');
-  const idRule = getTranslation('idRule');
-  const passwordRule = getTranslation('passwordRule');
   const specialCharsRule = getTranslation('specialCharsRule');
-  const dividerText = getTranslation('dividerText');
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -723,46 +534,16 @@ Contacto: jihun.jo@yahoo.com`,
         </View>
 
         <View style={styles.form}>
-          {!isLogin && (
-            <TextInput
-              style={styles.input}
-              placeholder={nicknamePlaceholder}
-              value={displayName}
-              onChangeText={setDisplayName}
-              autoCapitalize="none"
-              maxLength={10}
-            />
-          )}
-          
           <TextInput
             style={styles.input}
-            placeholder={idPlaceholder}
-            value={email}
-            onChangeText={setEmail}
+            placeholder={nicknamePlaceholder}
+            value={displayName}
+            onChangeText={setDisplayName}
             autoCapitalize="none"
-            keyboardType="email-address"
+            maxLength={10}
           />
-          
-          <TextInput
-            style={styles.input}
-            placeholder={passwordPlaceholder}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            maxLength={20}
-          />
-          {!isLogin && (
-            <TextInput
-              style={styles.input}
-              placeholder={confirmPasswordPlaceholder}
-              value={passwordConfirm}
-              onChangeText={setPasswordConfirm}
-              secureTextEntry
-              maxLength={20}
-            />
-          )}
 
-          {!isLogin && (
+          {
             <View style={styles.termsContainer}>
               <Text style={styles.termsTitle}>
                 {getTranslation('termsTitle')}
@@ -786,8 +567,7 @@ Contacto: jihun.jo@yahoo.com`,
             </View>
           )}
 
-          {!isLogin && (
-            <View style={styles.languageContainer}>
+          <View style={styles.languageContainer}>
               <Text style={styles.languageLabel}>
                 {selectLanguageLabel}
               </Text>
@@ -853,10 +633,8 @@ Contacto: jihun.jo@yahoo.com`,
                 </TouchableOpacity>
               </View>
             </View>
-          )}
 
-          {!isLogin && (
-            <View style={styles.rulesContainer}>
+          <View style={styles.rulesContainer}>
               <Text style={styles.rulesTitle}>
                 {rulesTitle}
               </Text>
@@ -864,16 +642,9 @@ Contacto: jihun.jo@yahoo.com`,
                 {nicknameRule}
               </Text>
               <Text style={styles.rulesText}>
-                {idRule}
-              </Text>
-              <Text style={styles.rulesText}>
-                {passwordRule}
-              </Text>
-              <Text style={styles.rulesText}>
                 {specialCharsRule}
               </Text>
             </View>
-          )}
 
           <TouchableOpacity 
             style={[styles.button, isProcessing && styles.buttonDisabled]} 
@@ -885,24 +656,6 @@ Contacto: jihun.jo@yahoo.com`,
             </Text>
           </TouchableOpacity>
 
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>
-              {dividerText}
-            </Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          {/* Google Sign-In 버튼 및 로직 완전 제거 */}
-
-          <TouchableOpacity
-            style={styles.switchButton}
-            onPress={() => setIsLogin(!isLogin)}
-          >
-            <Text style={styles.switchButtonText}>
-              {switchButtonText}
-            </Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
       <AdMobBannerComponent screenType="login" />
